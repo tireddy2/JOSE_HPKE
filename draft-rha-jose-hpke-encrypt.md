@@ -253,7 +253,7 @@ HPKE in Base mode does not offer authentication as part of the HPKE KEM. In this
 JOSE constructs like JWS and JSON Web Tokens (JWTs) can be used to add authentication. 
 HPKE also offers modes that offer authentication.
 
-HPKE relies on a source of randomness to be available on the device.In Key Agreement 
+HPKE relies on a source of randomness to be available on the device. In Key Agreement 
 with Key Wrapping mode, CEK has to be randomly generated and it MUST be
 ensured that the guidelines in {{RFC8937}} for random number generations are followed. 
 

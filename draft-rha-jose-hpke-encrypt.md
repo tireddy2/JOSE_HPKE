@@ -136,7 +136,7 @@ be present in the unprotected header parameter.
 
 The 'encapsulated_key' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string.
 
-### Direct Key Agreement
+### HPKE Usage in Direct and Key Agreement with Key Wrapping
 
 In Direct Key Agreement, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the 'ciphertext.' In Key Agreement with Key Wrapping, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the 'ciphertext.'
 

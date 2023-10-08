@@ -79,7 +79,7 @@ public-key encryption of arbitrary-sized plaintexts for a recipient public key.
 HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM),
 key derivation function (KDF), and authenticated encryption with additional data 
 (AEAD) function. Authentication for HPKE in JOSE is provided by 
-JOSE-native security mechanisms.
+JOSE-native security mechanisms or by one of the authenticated variants of HPKE.
 
 This document defines the use of the HPKE with JOSE.
 
@@ -95,11 +95,15 @@ Diffie-Hellman exchange to establish a shared secret. The motivation for
 standardizing a public key encryption scheme is explained in the introduction
 of {{RFC9180}}.
 
-The HPKE specification defines several features for use with public key encryption
-and a subset of those features are applied to JOSE ({{RFC7516}}). Since 
-JOSE provides constructs for authentication, those are not re-used from the HPKE specification.
-This specification uses the "base" mode, as it is called in HPKE specification
-language.
+The HPKE specification provides a variant of public key encryption of
+arbitrary-sized plaintexts for a recipient public key. It also
+includes three authenticated variants, including one that authenticates
+possession of a pre-shared key, one that authenticates possession of
+a key encapsulation mechanism (KEM) private key, and one that
+authenticates possession of both a pre-shared key and a KEM private key.
+
+This specification utilizes HPKE as a foundational building block and
+carries the output to JOSE ({{RFC7516}}).
 
 # Conventions and Definitions
 
@@ -124,14 +128,20 @@ This specification uses the following abbreviations and terms:
 
 The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result. When Direct Key Agreement is employed, the shared secret established through the HPKE will be the content encryption key (CEK). When Key Agreement with Key Wrapping is employed, the shared secret established through the HPKE will wrap the CEK. If multiple recipients are needed, then the version with key wrap is used.
 
-In both cases a new JOSE header parameter, called 'encapsulated_key',
-is used to convey the content of the enc structure defined in the HPKE specification. "enc" represents the serialized public key.
+In both cases a new JOSE header parameter, called 'encapsulated_key', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
 
 When the alg value is set to any of algorithms registered by this
 specification then the 'encapsulated_key' header parameter MUST
 be present in the unprotected header parameter.
 
 The 'encapsulated_key' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string.
+
+### Direct Key Agreement
+
+In Direct Key Agreement, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the 'ciphertext.' In Key Agreement with Key Wrapping, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the 'ciphertext.'
+
+The sender MUST specify the 'alg' parameter in the protected header to indicate the use of HPKE. Additionally, the sender MUST place the 'encapsulated_key' parameter in the unprotected header. Optionally, the 'kid' parameter MAY be used to identify the static recipient public key used by the sender.
+
 
 # Ciphersuite Registration
 
@@ -216,8 +226,8 @@ The JOSE HPKE PQ/T hybrid ciphersuites are defined in {{IANA}}.
 
 ## Example Hybrid Key Agreement Computation
 
-This example uses HPKE-Base-P256-SHA256-AES128GCM as the algorithm,
-which correspond to the following HPKE algorithm combination:
+This example uses HPKE-Base-P256-SHA256-AES128GCM which corresponds
+to the following HPKE algorithm combination:
 
 - KEM: DHKEM(P-256, HKDF-SHA256)
 - KDF: HKDF-SHA256

@@ -103,7 +103,7 @@ a key encapsulation mechanism (KEM) private key, and one that
 authenticates possession of both a pre-shared key and a KEM private key.
 
 This specification utilizes HPKE as a foundational building block and
-carries the output to JOSE ({{RFC7516}}).
+carries the output to JOSE ({{RFC7516}}, {{RFC7518}}).
 
 # Conventions and Definitions
 
@@ -126,7 +126,7 @@ This specification uses the following abbreviations and terms:
 
 ## Overview
 
-The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result. When Direct Key Agreement is employed, the shared secret established through the HPKE will be the content encryption key (CEK). When Key Agreement with Key Wrapping is employed, the shared secret established through the HPKE will wrap the CEK. If multiple recipients are needed, then the version with key wrap is used.
+The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result. When Direct Key Agreement is employed, the shared secret established through the HPKE will be the content encryption key (CEK). When Key Agreement with Key Wrapping is employed, the shared secret established through the HPKE will wrap the CEK. If multiple recipients are needed, then Key Agreement with Key Wrapping mode is used.
 
 In both cases a new JOSE header parameter, called 'encapsulated_key', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
 
@@ -138,10 +138,9 @@ The 'encapsulated_key' parameter contains the encapsulated key, which is output 
 
 ### HPKE Usage in Direct and Key Agreement with Key Wrapping
 
-In Direct Key Agreement, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the 'ciphertext.' In Key Agreement with Key Wrapping, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the 'ciphertext.'
+In Direct Key Agreement mode, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In Key Agreement with Key Wrapping mode, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
 
-The sender MUST specify the 'alg' parameter in the protected header to indicate the use of HPKE. Additionally, the sender MUST place the 'encapsulated_key' parameter in the unprotected header. Optionally, the 'kid' parameter MAY be used to identify the static recipient public key used by the sender.
-
+In both modes, the sender MUST specify the 'alg' parameter in the protected header to indicate the use of HPKE. Additionally, the sender MUST place the 'encapsulated_key' parameter in the unprotected header. Optionally, the unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
 
 # Ciphersuite Registration
 
@@ -186,27 +185,29 @@ The SealBase(pkR, info, aad, pt) function is used to encrypt a plaintext pt to a
 
    Two cases of plaintext need to be distinguished:
 
+   *  In Direct Key Agreement mode, the plaintext "pt" passed into SealBase
+      is the content to be encrypted.  Hence, there is no intermediate
+      layer utilizing a CEK.
+
    *  In Key Agreement with Key Wrapping mode, the plaintext "pt" passed into
       SealBase is the CEK.  The CEK is a random byte sequence of length
       appropriate for the encryption algorithm. For example, AES-128-GCM 
       requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
-   *  In Direct Key Agreement mode, the plaintext "pt" passed into SealBase
-      is the content to be encrypted.  Hence, there is no intermediate
-      layer utilizing a CEK.
-
-   The "aad" parameter in SealBase function will take the JWE AAD value as input. The "info" parameter in SealBase function will take the JOSE context specific data defined in Section 4.6.2 of {{RFC7518}} as input.
+   The "aad" parameter in SealBase function will take the JWE AAD value as input when the JWE AAD value is non-empty; otherwise, it will take an empty aad. 
    
+   The HPKE specification defines the "info" parameter as a context information structure that is used to ensure that the derived keying material is bound to the context of the transaction. The "info" parameter in SealBase function will take the JOSE context specific data defined in Section 4.6.2 of {{RFC7518}} as input.
+      
    The SealBase function internally creates the sending HPKE context by invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with "pkR" and "info". This yields the context "sctxt" and an encapsulation key "enc". The SealBase function then invokes the Seal() method on "sctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding ciphertext "ct".
 
-   If SealBase() is successful, it will output a ciphertext "ct" and an encapsulated key "enc".
+   In summary, if SealBase() is successful, it will output a ciphertext "ct" and an encapsulated key "enc". In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded, since JSON lacks a way to directly represent arbitrary octet sequences.
 
 ## HPKE Decryption with OpenBase
 
    The recipient will use the OpenBase(enc, skR, info, aad, ct) function
-   with the "encapsulated_key" and the "ciphertext" parameters received from the sender.  The
-   "aad" and the "info" parameters are constructed from JWE AAD and JOSE context,
-   respectively.
+   with the base64url decoded "encapsulated_key" and the "ciphertext" parameters 
+   received from the sender.  The "aad" and the "info" parameters are constructed 
+   from JWE AAD and JOSE context, respectively.
 
    The OpenBase internally creates the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc", and "info". This yields the context "rctxt". The OpenBase function then decrypts "ct" by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", 
    yielding "pt" or an error on failure.
@@ -245,7 +246,7 @@ to the following HPKE algorithm combination:
     },
     "encapsulated_key": "BIxvdeRjp3MILzyw06cBNIpXjGeAq6ZYZGaCqa9ykd/
     Cd+yTw9WHB4GChsEJeCVFczjcPcr/Nn4pUTQunbMNwOc=",
-    "ciphertext": "7iIgYwjkeMJ5uUuwcfOl+7rEEqbv/jQZX3xBadfY6BZm2L4T"
+    "ciphertext": "TODO"
 }
 
 ~~~~

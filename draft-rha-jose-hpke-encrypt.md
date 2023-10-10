@@ -49,6 +49,26 @@ author:
     city: Munich
     country: Germany
     email: "aritra.banerjee@nokia.com"
+-
+    ins: O. Steele
+    name: Orie Steele
+    organization: Transmute
+    email: orie@transmute.industries
+    country: United States
+
+ -
+   ins: M. Jones
+   name: Michael B. Jones
+   organization: independent
+   email: michael_b_jones@hotmail.com
+   country: United States
+
+-
+    ins: M. Chanda 
+    name: Matt Chanda
+    organization: Apple
+    email: chanda@apple.com
+    country: United States
 
 normative:
   RFC2119:

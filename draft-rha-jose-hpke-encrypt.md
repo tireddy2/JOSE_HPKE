@@ -63,13 +63,6 @@ author:
     email: michael_b_jones@hotmail.com
     country: United States
 
- -
-    ins: M. Chanda 
-    name: Matt Chanda
-    organization: Apple
-    email: chanda@apple.com
-    country: United States
-
 normative:
   RFC2119:
   RFC8174:
@@ -570,4 +563,6 @@ With Expert Review category'.
 # Acknowledgments
 {: numbered="false"}
 
-It leverages text from {{?I-D.ietf-cose-hpke}}. 
+This specification leverages text from {{?I-D.ietf-cose-hpke}}. We would like to thank Matt Chanda and Aaron Parecki for their feedback.
+
+

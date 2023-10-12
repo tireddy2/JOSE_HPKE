@@ -396,7 +396,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name:HPKE-Base-CP384-SHA512-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for COSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -412,7 +412,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-CP256-SHA256-AES128GCM
-- Algorithm Description: Cipher suite for COSE-HPKE in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES128GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES128GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -420,7 +420,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-CP384-SHA512-AES256GCM
-- Algorithm Description: Cipher suite for COSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -428,7 +428,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-CP521-SHA512-AES256GCM
-- Algorithm Description: Cipher suite for COSE-HPKE in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -550,7 +550,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-CP256-SHA256-AES128GCMKW
-- Algorithm Description: Cipher suite for COSE-HPKE in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and Key wrapping with the AES128GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and Key wrapping with the AES128GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -558,7 +558,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-CP384-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for COSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES256GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES256GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -566,7 +566,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-CP521-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for COSE-HPKE in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES256GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES256GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG

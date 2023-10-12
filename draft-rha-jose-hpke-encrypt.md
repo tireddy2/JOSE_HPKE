@@ -70,6 +70,7 @@ normative:
   RFC7516:
   RFC7518:
   RFC8037:
+  RFC7517:
   
 informative:
   RFC8937:
@@ -135,7 +136,7 @@ This specification uses the following abbreviations and terms:
 - Key Derivation Function (KDF), see {{RFC9180}}.
 - Authenticated Encryption with Associated Data (AEAD), see {{RFC9180}}.
 - Additional Authenticated Data (AAD), see {{RFC9180}}.
-- Key Type (kty) Value (s), see {{RFC8037}}.
+- Key Type (kty) Value (s), see {{RFC7517}}.
 
 # HPKE for JOSE
 

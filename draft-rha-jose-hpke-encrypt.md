@@ -136,7 +136,7 @@ This specification uses the following abbreviations and terms:
 - Key Derivation Function (KDF), see {{RFC9180}}.
 - Authenticated Encryption with Associated Data (AEAD), see {{RFC9180}}.
 - Additional Authenticated Data (AAD), see {{RFC9180}}.
-- Key Type (kty) Value (s), see {{RFC7517}}.
+- Key Type (kty), see {{RFC7517}}.
 
 # HPKE for JOSE
 
@@ -150,7 +150,7 @@ When the alg value is set to any of algorithms registered by this
 specification then the 'encapsulated_key' header parameter MUST
 be present in the unprotected header parameter.
 
-The 'encapsulated_key' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. We recommend using OKP (Octet Key Pair) for Key Type ("kty") to align with {{RFC8037}}.
+The 'encapsulated_key' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
 
 ### HPKE Usage in Direct and Key Agreement with Key Wrapping
 

@@ -86,7 +86,7 @@ informative:
 --- abstract
 
 
-This specification defines hybrid public-key encryption (HPKE) for use with 
+This specification defines Hybrid public-key encryption (HPKE) for use with 
 Javascript Object Signing and Encryption (JOSE). HPKE offers a variant of
 public-key encryption of arbitrary-sized plaintexts for a recipient public key.
 

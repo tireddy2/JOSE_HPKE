@@ -156,7 +156,15 @@ The 'encapsulated_key' parameter contains the encapsulated key, which is output 
 
 In Direct Key Agreement mode, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In Key Agreement with Key Wrapping mode, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
 
-In both modes, the sender MUST specify the 'alg' parameter in the protected header to indicate the use of HPKE. Additionally, the sender MUST place the 'encapsulated_key' parameter in the unprotected header. Optionally, the unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
+In both modes, the sender MUST specify the 'alg' parameter in the protected header to indicate the use of HPKE. 
+
+#### HPKE Usage in Direct Key Agreement mode
+
+The sender MUST place the 'encapsulated_key' parameter in the protected header. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
+
+#### HPKE Usage in Key Agreement with Key Wrapping mode
+
+In the JWE JSON Serialization, the sender MUST place the 'encapsulated_key' parameter in the per-recipient unprotected header. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
 
 # Ciphersuite Registration
 
@@ -214,9 +222,11 @@ The SealBase(pkR, info, aad, pt) function is used to encrypt a plaintext pt to a
    
    The HPKE specification defines the "info" parameter as a context information structure that is used to ensure that the derived keying material is bound to the context of the transaction. The "info" parameter in SealBase function will take the JOSE context specific data defined in Section 4.6.2 of {{RFC7518}} as input.
       
-   The SealBase function internally creates the sending HPKE context by invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with "pkR" and "info". This yields the context "sctxt" and an encapsulation key "enc". The SealBase function then invokes the Seal() method on "sctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding ciphertext "ct".
+   The SealBase function internally creates the sending HPKE context by invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with "pkR" and "info". This yields the context "sctxt" and an encapsulation key "enc". The SealBase function then invokes the Seal() method on "sctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding ciphertext "ct". Note that Section 6 of {RFC9180} discusses Single-Shot APIs for encryption and decryption; SetupBaseS internally invokes Seal() method to return both "ct" and "enc". 
 
-   In summary, if SealBase() is successful, it will output a ciphertext "ct" and an encapsulated key "enc". In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded, since JSON lacks a way to directly represent arbitrary octet sequences.
+   In summary, if SealBase() is successful, it will output a ciphertext "ct" and an encapsulated key "enc". In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded, since JSON lacks a way to directly represent arbitrary octet sequences. 
+
+   In both modes, "encapsulated_key" will contain the value of BASE64URL(enc). In Direct Key Agreement mode, JWE Ciphertext will contain the value of BASE64URL(ct). In Key Agreement with Key Wrapping mode, JWE Encrypted Key will contain the value of BASE64URL(ct). In Direct Key Agreement mode, JWE Encrypted Key will use the value of empty octet sequence.
 
 ## HPKE Decryption with OpenBase
 
@@ -256,15 +266,13 @@ to the following HPKE algorithm combination:
 ~~~~
 
 {
-    "header": {
-        "alg": "HPKE-Base-P256-SHA256-AES128GCM",
-        "kid": "7"
-    },
-    "encapsulated_key": "BIxvdeRjp3MILzyw06cBNIpXjGeAq6ZYZGaCqa9ykd/
+   "alg": "HPKE-Base-P256-SHA256-AES128GCM",
+   "kid": "7"
+   "encapsulated_key": "BIxvdeRjp3MILzyw06cBNIpXjGeAq6ZYZGaCqa9ykd/
     Cd+yTw9WHB4GChsEJeCVFczjcPcr/Nn4pUTQunbMNwOc=",
-    "ciphertext": "TODO"
 }
-
+              
+              JWE Protected Header JSON
 ~~~~
 
 # Security Considerations

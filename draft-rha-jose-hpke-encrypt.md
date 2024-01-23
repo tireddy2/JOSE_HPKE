@@ -144,13 +144,13 @@ This specification uses the following abbreviations and terms:
 
 The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result. When Direct Key Agreement is employed, the shared secret established through the HPKE will be the content encryption key (CEK). When Key Agreement with Key Wrapping is employed, the shared secret established through the HPKE will wrap the CEK. If multiple recipients are needed, then Key Agreement with Key Wrapping mode is used.
 
-In both cases a new JOSE header parameter, called 'encapsulated_key', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
+In both cases a new JOSE header parameter, called 'ek', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
 
 When the alg value is set to any of algorithms registered by this
-specification then the 'encapsulated_key' header parameter MUST
+specification then the 'ek' header parameter MUST
 be present in the unprotected header parameter.
 
-The 'encapsulated_key' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
+The 'ek' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
 
 ### HPKE Usage in Direct and Key Agreement with Key Wrapping
 
@@ -158,12 +158,12 @@ In Direct Key Agreement mode, HPKE is employed to directly encrypt the plaintext
 
 #### HPKE Usage in Direct Key Agreement mode
 
-In Direct Key Agreement mode, the sender MUST specify the 'encapsulated_key' and 'alg' parameters in the protected header to indicate the use of HPKE. In this mode, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. If the 'enc' parameter is present, it MUST be ignored by implementations. This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
+In Direct Key Agreement mode, the sender MUST specify the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE. In this mode, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. If the 'enc' parameter is present, it MUST be ignored by implementations. This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
 
 #### HPKE Usage in Key Agreement with Key Wrapping mode
 
-In the JWE JSON Serialization, the sender MUST place the 'encapsulated_key' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
-In the JWE Compact Serialization, the sender MUST place the 'encapsulated_key' and 'alg' parameters in the protected header to indicate the use of HPKE.
+In the JWE JSON Serialization, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
+In the JWE Compact Serialization, the sender MUST place the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE.
 
 # Ciphersuite Registration
 
@@ -225,14 +225,14 @@ The SealBase(pkR, info, aad, pt) function is used to encrypt a plaintext pt to a
 
    In summary, if SealBase() is successful, it will output a ciphertext "ct" and an encapsulated key "enc". 
   
-   In both modes, 'encapsulated_key' will contain the value of "enc". In Direct Key Agreement mode, the JWE Ciphertext will contain the value of 'ct'. In Key Agreement with Key Wrapping mode, the JWE Encrypted Key will contain the value of 'ct'. In Direct Key Agreement mode, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
+   In both modes, 'ek' will contain the value of "enc". In Direct Key Agreement mode, the JWE Ciphertext will contain the value of 'ct'. In Key Agreement with Key Wrapping mode, the JWE Encrypted Key will contain the value of 'ct'. In Direct Key Agreement mode, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
 
    In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded (see Section 7.1 and 7.2 of {{RFC7518}}), since JSON lacks a way to directly represent arbitrary octet sequences.    
 
 ## HPKE Decryption with OpenBase
 
    The recipient will use the OpenBase(enc, skR, info, aad, ct) function
-   with the base64url decoded "encapsulated_key" and the "ciphertext" parameters 
+   with the base64url decoded "ek" and the "ciphertext" parameters 
    received from the sender.  The "aad" and the "info" parameters are constructed 
    from Additional Authenticated Data encryption parameter and JOSE context, respectively.
 
@@ -243,14 +243,6 @@ The SealBase(pkR, info, aad, pt) function is used to encrypt a plaintext pt to a
    decrypted, the result will be either the CEK (when Key Agreement with Key Wrapping mode is
    used), or the content (if Direct Key Agreement mode is used).  The CEK is the
    symmetric key used to decrypt the ciphertext.
-
-# Post-Quantum Considerations
-
-The migration to Post-Quantum Cryptography (PQC) is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The traditional algorithms, such as RSA and elliptic curve, will fall to quantum cryptalanysis, while the post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs.
-
-Hybrid key exchange refers to using multiple key exchange algorithms simultaneously and combining the result with the goal of providing security even if all but one of the component algorithms is broken. It is motivated by transition to post-quantum cryptography. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.westerbaan-cfrg-hpke-xyber768d00-02}}. Kyber, which is a KEM does not support the static-ephemeral key exchange that allows HPKE based on DH based KEMs and its optional authenticated modes as discussed in Section 1.2 of {{?I-D.westerbaan-cfrg-hpke-xyber768d00-02}}. 
-
-The JOSE HPKE PQ/T hybrid ciphersuites are defined in {{IANA}}.
 
 ## Example Hybrid Key Agreement Computation
 
@@ -269,7 +261,7 @@ to the following HPKE algorithm combination:
 {
    "alg": "HPKE-Base-P256-SHA256-AES128GCM",
    "kid": "7"
-   "encapsulated_key": "BIxvdeRjp3MILzyw06cBNIpXjGeAq6ZYZGaCqa9ykd/
+   "ek": "BIxvdeRjp3MILzyw06cBNIpXjGeAq6ZYZGaCqa9ykd/
     Cd+yTw9WHB4GChsEJeCVFczjcPcr/Nn4pUTQunbMNwOc=",
 }
               
@@ -417,7 +409,7 @@ With Expert Review category'.
 
 ## JOSE Header Parameters
 
-- Parameter Name: "encapsulated_key"
+- Parameter Name: "ek"
 - Parameter Description: HPKE encapsulated key
 - Parameter Information Class: Public
 - Used with "kty" Value(s): "OKP"

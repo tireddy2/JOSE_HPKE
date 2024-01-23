@@ -293,8 +293,6 @@ HPKE relies on a source of randomness to be available on the device. In Key Agre
 with Key Wrapping mode, CEK has to be randomly generated and it MUST be
 ensured that the guidelines in {{RFC8937}} for random number generations are followed. 
 
-# IANA Considerations
-
 #  IANA Considerations {#IANA}
 
 This document requests IANA to add new values to the 'JOSE Algorithms' and to 

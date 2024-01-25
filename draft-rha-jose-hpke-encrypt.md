@@ -147,11 +147,9 @@ The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using 
 
 This specification supports two uses of HPKE in JOSE, namely
 
-  *  HPKE in a single recipient setup. In this case, the shared secret established through the HPKE will
-     generate the content encryption key (CEK) and encrypts the plaintext.
+  *  HPKE in a single recipient setup referred to as Integrated Encryption mode. In this case, the shared secret established through the HPKE will generate the content encryption key (CEK) and encrypts the plaintext.
   
-  *  HPKE in a multiple recipient setup. In this case, the shared secret established through the HPKE will
-     wrap the CEK.
+  *  HPKE in a multiple recipient setup referred to as Key Encryption mode. In this case, the shared secret established through the HPKE will wrap the CEK.
 
 In both cases a new JOSE header parameter, called 'ek', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
 
@@ -159,17 +157,17 @@ When the alg value is set to any of algorithms registered by this specification 
 
 The 'ek' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
 
-### HPKE Usage in single recipient and multiple recipient setup
+### HPKE Usage in Integrated Encryption and Key Encryption modes
 
-In single recipient use case, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In multiple recipient setup, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
+In Integrated Encryption mode, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In Key Encryption mode, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
 
-#### HPKE Usage in single recipient setup
+#### HPKE Usage in Integrated Encryption mode
 
-In single recipient setup, the sender MUST specify the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE. In this setup, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. If the 'enc' parameter is present, it MUST be ignored by implementations. This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In single recipient setup, JWE Compact serialization MUST be used.
+In Integrated Encryption mode, the sender MUST specify the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE. In this setup, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In this mode, JWE Compact serialization MUST be used.
 
-#### HPKE Usage in multiple recipient setup
+#### HPKE Usage in Key Encryption mode
 
-In multiple recipient setup, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In multiple recipient setup, JWE serialization MUST be used. In this setup, the 'enc' (Encryption Algorithm) parameter MUST be present to identify the content encryption algorithm used to perform encryption on the plaintext to produce the ciphertext.
+In Key Encryption mode, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In this mode, JWE serialization MUST be used. In this setup, the 'enc' (Encryption Algorithm) parameter MUST be present to identify the content encryption algorithm used to perform encryption on the plaintext to produce the ciphertext.
 
 # Ciphersuite Registration
 
@@ -218,18 +216,18 @@ The message encryption process is as follows.
 
    Two cases of plaintext need to be distinguished:
 
-   *  In single recipient setup, the plaintext "pt" passed into SetupBaseS
+   *  In Integrated Encryption mode, the plaintext "pt" passed into SetupBaseS
       is the content to be encrypted.  Hence, there is no intermediate
       layer utilizing a CEK.
 
-   *  In multiple recipient setup, the plaintext "pt" passed into
+   *  In Key Encryption mode, the plaintext "pt" passed into
       SetupBaseS is the CEK. The CEK is a random byte sequence of length
       appropriate for the encryption algorithm. For example, AES-128-GCM 
       requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
 In the JWE Compact Serialization, the "aad" parameter in SetupBaseS function will take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. In the JWE JSON Serialization, SetupBaseS function will be invoked with empty associated data "aad".
 
-In both setups, 'ek' will contain the value of "enc". In single recipient setup, the JWE Ciphertext will contain the value of 'ct'. In multiple recipient setup, the JWE Encrypted Key will contain the value of 'ct'. In single  recipient setup, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
+In both modes, 'ek' will contain the value of "enc". In Integrated Encryption mode, the JWE Ciphertext will contain the value of 'ct'. In Key Encryption mode, the JWE Encrypted Key will contain the value of 'ct'. In Integrated Encryption mode, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
 
 In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded (see Section 7.1 and 7.2 of {{RFC7518}}), since JSON lacks a way to directly represent arbitrary octet sequences.   
 
@@ -239,7 +237,9 @@ In JWE Compact Serialization, the Single-Shot APIs specified in Section 6 of {{R
 
 The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" (output of base64url decoded JWE Ciphertext) by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. In the JWE Compact Serialization,the "aad" parameter is constructed from Additional Authenticated Data encryption parameter. In the JWE Compact Serialization, the "aad" parameter is configured with an empty octet sequence.  
 
-The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when multiple recipient is used), or the content (if single recipient is used).  The CEK is the symmetric key used to decrypt the ciphertext. If a "zip" parameter was included, the recipient will uncompress the decrypted plaintext using the specified compression algorithm.
+The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext. If a "zip" parameter was included, the recipient will uncompress the decrypted plaintext using the specified compression algorithm.
+
+The two modes can be distinguished by determining whether an "enc" member exists. If the "enc" member exists, it is a Key Encryption mode; otherwise, it is a Integrated Encryption mode.
 
 ## Example Hybrid Key Agreement Computation
 

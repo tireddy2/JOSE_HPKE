@@ -142,28 +142,34 @@ This specification uses the following abbreviations and terms:
 
 ## Overview
 
-The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result. When Direct Key Agreement is employed, the shared secret established through the HPKE will be the content encryption key (CEK). When Key Agreement with Key Wrapping is employed, the shared secret established through the HPKE will wrap the CEK. If multiple recipients are needed, then Key Agreement with Key Wrapping mode is used.
+The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result 
+(a) Direct Key Agreement (b) Key Agreement with Key Wrapping. 
+
+This specification supports two uses of HPKE in JOSE, namely
+
+  *  HPKE in a single recipient setup. In this case, the shared secret established through the HPKE will
+     generate the content encryption key (CEK) and encrypts the plaintext.
+  
+  *  HPKE in a multiple recipient setup. In this case, the shared secret established through the HPKE will
+     wrap the CEK.
 
 In both cases a new JOSE header parameter, called 'ek', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
 
-When the alg value is set to any of algorithms registered by this
-specification then the 'ek' header parameter MUST
-be present in the unprotected header parameter.
+When the alg value is set to any of algorithms registered by this specification then the 'ek' header parameter MUST be present.
 
 The 'ek' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
 
-### HPKE Usage in Direct and Key Agreement with Key Wrapping
+### HPKE Usage in single recipient and multiple recipient setup
 
-In Direct Key Agreement mode, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In Key Agreement with Key Wrapping mode, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
+In single recipient use case, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In multiple recipient setup, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
 
-#### HPKE Usage in Direct Key Agreement mode
+#### HPKE Usage in single recipient setup
 
-In Direct Key Agreement mode, the sender MUST specify the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE. In this mode, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. If the 'enc' parameter is present, it MUST be ignored by implementations. This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
+In single recipient setup, the sender MUST specify the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE. In this setup, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. If the 'enc' parameter is present, it MUST be ignored by implementations. This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In single recipient setup, JWE Compact serialization MUST be used.
 
-#### HPKE Usage in Key Agreement with Key Wrapping mode
+#### HPKE Usage in multiple recipient setup
 
-In the JWE JSON Serialization, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
-In the JWE Compact Serialization, the sender MUST place the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE.
+In multiple recipient setup, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In multiple recipient setup, JWE serialization MUST be used. In this setup, the 'enc' (Encryption Algorithm) parameter MUST be present to identify the content encryption algorithm used to perform encryption on the plaintext to produce the ciphertext.
 
 # Ciphersuite Registration
 
@@ -204,45 +210,36 @@ For a list of ciphersuite registrations, please see {{IANA}}.
 
 ## HPKE Encryption with SealBase
 
-The SealBase(pkR, info, aad, pt) function is used to encrypt a plaintext pt to a recipient's public key (pkR). If "zip" parameter is present, compression is applied to the plaintext pt using the specified compression algorithm before invoking SealBase. 
+The message encryption process is as follows. 
+
+1. The sending HPKE context is created by invoking invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with the recipient's public key "pkR" and "info". The HPKE specification defines the "info" parameter as a context information structure that is used to ensure that the derived keying material is bound to the context of the transaction. The SetupBaseS function will be called with the default value of an empty string for the 'info' parameter. This yields the context "sctxt" and an encapsulation key "enc". 
+
+2. If "zip" parameter is present, compression is applied to the plaintext "pt" using the specified compression algorithm. Encrypt plaintext "pt" by invoking the Seal() method (Section 5.2 of {{RFC9180}}) on "sctxt" with "aad", yielding ciphertext "ct".
 
    Two cases of plaintext need to be distinguished:
 
-   *  In Direct Key Agreement mode, the plaintext "pt" passed into SealBase
+   *  In single recipient setup, the plaintext "pt" passed into SetupBaseS
       is the content to be encrypted.  Hence, there is no intermediate
       layer utilizing a CEK.
 
-   *  In Key Agreement with Key Wrapping mode, the plaintext "pt" passed into
-      SealBase is the CEK.  The CEK is a random byte sequence of length
+   *  In multiple recipient setup, the plaintext "pt" passed into
+      SetupBaseS is the CEK. The CEK is a random byte sequence of length
       appropriate for the encryption algorithm. For example, AES-128-GCM 
       requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
-   In the JWE Compact Serialization, the "aad" parameter in SealBase function will take the Additional Authenticated Data encryption parameter defined in Section 5.1 of {{RFC7516}} as input. In the JWE JSON Serialization, SealBase function will be invoked with empty associated data "aad".
+In the JWE Compact Serialization, the "aad" parameter in SetupBaseS function will take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. In the JWE JSON Serialization, SetupBaseS function will be invoked with empty associated data "aad".
 
-   The HPKE specification defines the "info" parameter as a context information structure that is used to ensure that the derived keying material is bound to the context of the transaction. The "info" parameter in SealBase function will take the JOSE context specific data defined in Section 4.6.2 of {{RFC7518}} as input.
-      
-   The SealBase function internally creates the sending HPKE context by invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with "pkR" and "info". This yields the context "sctxt" and an encapsulation key "enc". The SealBase function then invokes the Seal() method on "sctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding ciphertext "ct". Note that Section 6 of {{RFC9180}} discusses Single-Shot APIs for encryption and decryption; SetupBaseS internally invokes Seal() method to return both "ct" and "enc". 
+In both setups, 'ek' will contain the value of "enc". In single recipient setup, the JWE Ciphertext will contain the value of 'ct'. In multiple recipient setup, the JWE Encrypted Key will contain the value of 'ct'. In single  recipient setup, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
 
-   In summary, if SealBase() is successful, it will output a ciphertext "ct" and an encapsulated key "enc". 
-  
-   In both modes, 'ek' will contain the value of "enc". In Direct Key Agreement mode, the JWE Ciphertext will contain the value of 'ct'. In Key Agreement with Key Wrapping mode, the JWE Encrypted Key will contain the value of 'ct'. In Direct Key Agreement mode, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
+In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded (see Section 7.1 and 7.2 of {{RFC7518}}), since JSON lacks a way to directly represent arbitrary octet sequences.   
 
-   In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded (see Section 7.1 and 7.2 of {{RFC7518}}), since JSON lacks a way to directly represent arbitrary octet sequences.    
+In JWE Compact Serialization, the Single-Shot APIs specified in Section 6 of {{RFC9180}} for encryption and decryption cannot be used. This is because they require an 'aad' parameter, which takes the Encoded Protected Header comprising of 'ek' as input.
 
 ## HPKE Decryption with OpenBase
 
-   The recipient will use the OpenBase(enc, skR, info, aad, ct) function
-   with the base64url decoded "ek" and the "ciphertext" parameters 
-   received from the sender.  The "aad" and the "info" parameters are constructed 
-   from Additional Authenticated Data encryption parameter and JOSE context, respectively.
+The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" (output of base64url decoded JWE Ciphertext) by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. In the JWE Compact Serialization,the "aad" parameter is constructed from Additional Authenticated Data encryption parameter. In the JWE Compact Serialization, the "aad" parameter is configured with an empty octet sequence.  
 
-   The OpenBase internally creates the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc", and "info". This yields the context "rctxt". The OpenBase function then decrypts "ct" by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", 
-   yielding "pt" or an error on failure.
-   
-   The OpenBase function will, if successful, decrypts "ct".  When
-   decrypted, the result will be either the CEK (when Key Agreement with Key Wrapping mode is
-   used), or the content (if Direct Key Agreement mode is used).  The CEK is the
-   symmetric key used to decrypt the ciphertext.
+The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when multiple recipient is used), or the content (if single recipient is used).  The CEK is the symmetric key used to decrypt the ciphertext. If a "zip" parameter was included, the recipient will uncompress the decrypted plaintext using the specified compression algorithm.
 
 ## Example Hybrid Key Agreement Computation
 

@@ -225,7 +225,8 @@ The message encryption process is as follows.
       appropriate for the encryption algorithm. For example, AES-128-GCM 
       requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
-In the JWE Compact Serialization, the "aad" parameter in SetupBaseS function will take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. In the JWE JSON Serialization, SetupBaseS function will be invoked with empty associated data "aad".
+The "aad" parameter in SetupBaseS function will take Encoded Protected Header value BASE64URL(UTF8(JWE
+Protected Header)) as input.
 
 In both modes, 'ek' will contain the value of "enc". In Integrated Encryption mode, the JWE Ciphertext will contain the value of 'ct'. In Key Encryption mode, the JWE Encrypted Key will contain the value of 'ct'. In Integrated Encryption mode, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
 
@@ -235,7 +236,7 @@ In JWE Compact Serialization, the Single-Shot APIs specified in Section 6 of {{R
 
 ## HPKE Decryption with OpenBase
 
-The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" (output of base64url decoded JWE Ciphertext) by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. In the JWE Compact Serialization,the "aad" parameter is constructed from Additional Authenticated Data encryption parameter. In the JWE Compact Serialization, the "aad" parameter is configured with an empty octet sequence.  
+The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" (output of base64url decoded JWE Ciphertext) by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. The "aad" parameter should be the Encoded Protected Header value BASE64URL(UTF8(JWE Protected Header)).
 
 The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext. If a "zip" parameter was included, the recipient will uncompress the decrypted plaintext using the specified compression algorithm.
 

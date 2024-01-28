@@ -279,9 +279,9 @@ This example demonstrates the use of an encapsulted key with a JSON Web Encrypti
         "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:adjwW6fyyZ94ZBjGjx_OpDEKHLGfd1ELkug_YmRAjCk",
         "alg": "HPKE-Base-P256-SHA256-AES128GCM",
         "epk": {
-            "kty": "EK",
-            "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
-         }
+          "kty": "EK",
+          "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
+        }
       }
     },
     {

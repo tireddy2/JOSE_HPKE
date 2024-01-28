@@ -263,7 +263,7 @@ This example demonstrates the representaton of an encapsulted key as a JWK.
 ~~~
 
 
-This example demonstrates the use of an encapsulted key for use with JWE as described in this document.
+This example demonstrates the use of an encapsulted key with a JSON Web Encryption in JSON Serialization as described in this document.
 
 ~~~
 {

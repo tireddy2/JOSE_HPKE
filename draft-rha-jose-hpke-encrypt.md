@@ -263,16 +263,41 @@ This example demonstrates the representaton of an encapsulted key as a JWK.
 ~~~
 
 
-This example demonstrates the use of an encapsulted key an an ephemeral public key in an unprotected header.
+This example demonstrates the use of an encapsulted key for use with JWE as described in this document.
 
 ~~~
 {
-   "alg": "HPKE-Base-P256-SHA256-AES128GCM",
-   "kid": "peregrin.took@tuckborough.example",
-   "epk": {
-      "kty": "EK",
-      "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
-   }
+  "protected": "eyJlbmMiOiJBMTI4R0NNIn0",
+  "ciphertext": "S0qqrM3xXPUavbmL9LQkgUKRBu8BZ7DQWoT-mdNIZVU-ip_V-fbMokiGwp2aPM57DX3cXCK3TKHqdhZ8rSNduUja",
+  "iv": "AzaXpooLg3ZxEASQ",
+  "aad": "8J-SgCBhYWQ",
+  "tag": "S0omWw35S0H7tyEHsmGLDw",
+  "recipients": [
+    {
+      "encrypted_key": "yDVZLsO7-ecy_GCgEluwn9U723TCHNAzeYRRQPOfpHM",
+      "header": {
+        "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:adjwW6fyyZ94ZBjGjx_OpDEKHLGfd1ELkug_YmRAjCk",
+        "alg": "HPKE-Base-P256-SHA256-AES128GCM",
+        "epk": {
+            "kty": "EK",
+            "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
+         }
+      }
+    },
+    {
+      "encrypted_key": "iS73TFqJ61gkmh4DHAXADx4wyftA7pnY",
+      "header": {
+        "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:D2FKlj9MTIQma5bwdOVXk5Zh3_d60knzlbmD-SyMNAI",
+        "alg": "ECDH-ES+A128KW",
+        "epk": {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "nX6Y3DWC0olVe5H7-NkCzVDghsYSa_L9da3jzkHYkV8",
+          "y": "wDshQdcaY0J08wx25V3ystQSNe_qjsCaaFeeRWJqcE0"
+        }
+      }
+    }
+  ]
 }
 ~~~
 

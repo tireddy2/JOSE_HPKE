@@ -243,6 +243,41 @@ The SealBase(pkR, info, aad, pt) function is used to encrypt a plaintext pt to a
    used), or the content (if Direct Key Agreement mode is used).  The CEK is the
    symmetric key used to decrypt the ciphertext.
 
+## Encapsulated JSON Web Keys
+
+An encapsulated key can be represented as JSON Web Key as described in { Section 4 of RFC7515 }.
+
+The "kty" parameter MUST be "EK".
+
+The "ek" parameter MUST be present, and MUST be the base64url encoded output of the encap and decap operations defined for the kem.
+
+As described in { Section 4 of RFC7515 }, additional members can be present in the JWK; if not understood by implementations encountering them, they MUST be ignored.
+
+This example demonstrates the representaton of an encapsulted key as a JWK.
+
+~~~
+{
+   "kty": "EK",
+   "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
+}
+~~~
+
+
+This example demonstrates the use of an encapsulted key an an ephemeral public key in an unprotected header.
+
+~~~
+{
+   "alg": "HPKE-Base-P256-SHA256-AES128GCM",
+   "kid": "peregrin.took@tuckborough.example",
+   "epk": {
+      "kty": "EK",
+      "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
+   }
+}
+~~~
+
+
+
 # Post-Quantum Considerations
 
 The migration to Post-Quantum Cryptography (PQC) is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The traditional algorithms, such as RSA and elliptic curve, will fall to quantum cryptalanysis, while the post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs.

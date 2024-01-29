@@ -234,7 +234,66 @@ In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc"
 
 In JWE Compact Serialization, the Single-Shot APIs specified in Section 6 of {{RFC9180}} for encryption and decryption cannot be used. This is because they require an 'aad' parameter, which takes the Encoded Protected Header comprising of 'ek' as input.
 
+## Encapsulated JSON Web Keys
+
+An encapsulated key can be represented as JSON Web Key as described in { Section 4 of RFC7515 }.
+
+The "kty" parameter MUST be "EK".
+
+The "ek" parameter MUST be present, and MUST be the base64url encoded output of the encap and decap operations defined for the kem.
+
+As described in { Section 4 of RFC7515 }, additional members can be present in the JWK; if not understood by implementations encountering them, they MUST be ignored.
+
+This example demonstrates the representaton of an encapsulted key as a JWK.
+
+~~~
+{
+   "kty": "EK",
+   "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
+}
+~~~
+
+
+This example demonstrates the use of an encapsulted key with a JSON Web Encryption in JSON Serialization as described in this document.
+
+~~~
+{
+  "protected": "eyJlbmMiOiJBMTI4R0NNIn0",
+  "ciphertext": "S0qqrM3xXPUavbmL9LQkgUKRBu8BZ7DQWoT-mdNIZVU-ip_V-fbMokiGwp2aPM57DX3cXCK3TKHqdhZ8rSNduUja",
+  "iv": "AzaXpooLg3ZxEASQ",
+  "aad": "8J-SgCBhYWQ",
+  "tag": "S0omWw35S0H7tyEHsmGLDw",
+  "recipients": [
+    {
+      "encrypted_key": "yDVZLsO7-ecy_GCgEluwn9U723TCHNAzeYRRQPOfpHM",
+      "header": {
+        "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:adjwW6fyyZ94ZBjGjx_OpDEKHLGfd1ELkug_YmRAjCk",
+        "alg": "HPKE-Base-P256-SHA256-AES128GCM",
+        "epk": {
+          "kty": "EK",
+          "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
+        }
+      }
+    },
+    {
+      "encrypted_key": "iS73TFqJ61gkmh4DHAXADx4wyftA7pnY",
+      "header": {
+        "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:D2FKlj9MTIQma5bwdOVXk5Zh3_d60knzlbmD-SyMNAI",
+        "alg": "ECDH-ES+A128KW",
+        "epk": {
+          "kty": "EC",
+          "crv": "P-256",
+          "x": "nX6Y3DWC0olVe5H7-NkCzVDghsYSa_L9da3jzkHYkV8",
+          "y": "wDshQdcaY0J08wx25V3ystQSNe_qjsCaaFeeRWJqcE0"
+        }
+      }
+    }
+  ]
+}
+~~~
+
 ## HPKE Decryption with OpenBase
+
 
 The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" (output of base64url decoded JWE Ciphertext) by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. The "aad" parameter should be the Encoded Protected Header value BASE64URL(UTF8(JWE Protected Header)).
 

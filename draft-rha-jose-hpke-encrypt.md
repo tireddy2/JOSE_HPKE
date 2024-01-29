@@ -69,7 +69,6 @@ normative:
   RFC9180:
   RFC7516:
   RFC7518:
-  RFC8037:
   RFC7517:
   
 informative:
@@ -155,7 +154,7 @@ In both cases a new JOSE header parameter, called 'ek', is used to convey the co
 
 When the alg value is set to any of algorithms registered by this specification then the 'ek' header parameter MUST be present.
 
-The 'ek' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
+The 'ek' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "EK" defined in {#EK}. 	
 
 ### HPKE Usage in Integrated Encryption and Key Encryption modes
 
@@ -167,7 +166,7 @@ In Integrated Encryption mode, the sender MUST specify the 'ek' and 'alg' parame
 
 #### HPKE Usage in Key Encryption mode
 
-In Key Encryption mode, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In this mode, JWE serialization MUST be used. In this setup, the 'enc' (Encryption Algorithm) parameter MUST be present to identify the content encryption algorithm used to perform encryption on the plaintext to produce the ciphertext.
+In Key Encryption mode, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In this mode, JWE serialization MUST be used. In this setup, the 'enc' (Encryption Algorithm) parameter MUST be present to identify the content encryption algorithm used to perform encryption on the plaintext to produce the ciphertext. The "enc" Header Parameter MUST be integrity protected and it MUST occur only within JWE Protected Header.
 
 # Ciphersuite Registration
 
@@ -234,7 +233,7 @@ In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc"
 
 In JWE Compact Serialization, the Single-Shot APIs specified in Section 6 of {{RFC9180}} for encryption and decryption cannot be used. This is because they require an 'aad' parameter, which takes the Encoded Protected Header comprising of 'ek' as input.
 
-## Encapsulated JSON Web Keys
+## Encapsulated JSON Web Keys {#EK}
 
 An encapsulated key can be represented as JSON Web Key as described in { Section 4 of RFC7515 }.
 
@@ -254,7 +253,7 @@ This example demonstrates the representaton of an encapsulted key as a JWK.
 ~~~
 
 
-This example demonstrates the use of an encapsulted key with a JSON Web Encryption in JSON Serialization as described in this document.
+This example demonstrates the use of an encapsulted key with a JSON Web Encryption in JSON Serialization as described in this document. The JWE Protected Header value is: {"enc":"A128GCM"}. 
 
 ~~~
 {
@@ -344,6 +343,22 @@ ensured that the guidelines in {{RFC8937}} for random number generations are fol
 
 #  IANA Considerations {#IANA}
 
+The following is added to the "JSON Web Key Types" registry:
+
+- "kty" Parameter Value: "EK"
+- Key Type Description: HPKE
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): [[TBD: This RFC]]
+
+The following is added to the "JSON Web Key Parameters" registry:
+
+- Parameter Name: "ek"
+- Parameter Description: Encapsulated Key
+- Parameter Information Class: Public
+- Used with "kty" Value(s): "EK"
+- Specification Document(s): [[TBD: This RFC]]
+   
 This document requests IANA to add new values to the 'JOSE Algorithms' and to 
 the 'JOSE Header Parameters' registries in the 'Standards Action 
 With Expert Review category'.

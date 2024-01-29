@@ -142,29 +142,32 @@ This specification uses the following abbreviations and terms:
 
 ## Overview
 
-The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result. When Direct Key Agreement is employed, the shared secret established through the HPKE will be the content encryption key (CEK). When Key Agreement with Key Wrapping is employed, the shared secret established through the HPKE will wrap the CEK. If multiple recipients are needed, then Key Agreement with Key Wrapping mode is used.
+The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result 
+(a) Direct Key Agreement (b) Key Agreement with Key Wrapping. 
 
-In both cases a new JOSE header parameter, called 'encapsulated_key', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
+This specification supports two uses of HPKE in JOSE, namely
 
-When the alg value is set to any of algorithms registered by this
-specification then the 'encapsulated_key' header parameter MUST
-be present in the unprotected header parameter.
+  *  HPKE in a single recipient setup referred to as Integrated Encryption mode. In this case, the shared secret established through the HPKE will generate the content encryption key (CEK) and encrypts the plaintext.
+  
+  *  HPKE in a multiple recipient setup referred to as Key Encryption mode. In this case, the shared secret established through the HPKE will wrap the CEK.
 
-The 'encapsulated_key' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
+In both cases a new JOSE header parameter, called 'ek', is used to convey the content of the "enc" structure defined in the HPKE specification. "enc" represents the serialized public key.
 
-### HPKE Usage in Direct and Key Agreement with Key Wrapping
+When the alg value is set to any of algorithms registered by this specification then the 'ek' header parameter MUST be present.
 
-In Direct Key Agreement mode, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In Key Agreement with Key Wrapping mode, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
+The 'ek' parameter contains the encapsulated key, which is output of the HPKE KEM, and is represented as a base64url encoded string. The parameter "kty" MUST be present and set to "OKP" defined in Section 2 of {{RFC8037}}.
 
-In both modes, the sender MUST specify the 'alg' parameter in the protected header to indicate the use of HPKE. 
+### HPKE Usage in Integrated Encryption and Key Encryption modes
 
-#### HPKE Usage in Direct Key Agreement mode
+In Integrated Encryption mode, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. In Key Encryption mode, HPKE is used to encrypt the Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext.
 
-The sender MUST place the 'encapsulated_key' parameter in the protected header. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
+#### HPKE Usage in Integrated Encryption mode
 
-#### HPKE Usage in Key Agreement with Key Wrapping mode
+In Integrated Encryption mode, the sender MUST specify the 'ek' and 'alg' parameters in the protected header to indicate the use of HPKE. In this setup, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In this mode, JWE Compact serialization MUST be used.
 
-In the JWE JSON Serialization, the sender MUST place the 'encapsulated_key' parameter in the per-recipient unprotected header. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender.
+#### HPKE Usage in Key Encryption mode
+
+In Key Encryption mode, the sender MUST place the 'ek' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. In this mode, JWE serialization MUST be used. In this setup, the 'enc' (Encryption Algorithm) parameter MUST be present to identify the content encryption algorithm used to perform encryption on the plaintext to produce the ciphertext.
 
 # Ciphersuite Registration
 
@@ -205,43 +208,31 @@ For a list of ciphersuite registrations, please see {{IANA}}.
 
 ## HPKE Encryption with SealBase
 
-The SealBase(pkR, info, aad, pt) function is used to encrypt a plaintext pt to a recipient's public key (pkR).
+The message encryption process is as follows. 
+
+1. The sending HPKE context is created by invoking invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with the recipient's public key "pkR" and "info". The HPKE specification defines the "info" parameter as a context information structure that is used to ensure that the derived keying material is bound to the context of the transaction. The SetupBaseS function will be called with the default value of an empty string for the 'info' parameter. This yields the context "sctxt" and an encapsulation key "enc". 
+
+2. If "zip" parameter is present, compression is applied to the plaintext "pt" using the specified compression algorithm. Encrypt plaintext "pt" by invoking the Seal() method (Section 5.2 of {{RFC9180}}) on "sctxt" with "aad", yielding ciphertext "ct".
 
    Two cases of plaintext need to be distinguished:
 
-   *  In Direct Key Agreement mode, the plaintext "pt" passed into SealBase
+   *  In Integrated Encryption mode, the plaintext "pt" passed into SetupBaseS
       is the content to be encrypted.  Hence, there is no intermediate
       layer utilizing a CEK.
 
-   *  In Key Agreement with Key Wrapping mode, the plaintext "pt" passed into
-      SealBase is the CEK.  The CEK is a random byte sequence of length
+   *  In Key Encryption mode, the plaintext "pt" passed into
+      SetupBaseS is the CEK. The CEK is a random byte sequence of length
       appropriate for the encryption algorithm. For example, AES-128-GCM 
       requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
-   The "aad" parameter in SealBase function will take the JWE AAD value as input when the JWE AAD value is non-empty; otherwise, it will take an empty aad. 
-   
-   The HPKE specification defines the "info" parameter as a context information structure that is used to ensure that the derived keying material is bound to the context of the transaction. The "info" parameter in SealBase function will take the JOSE context specific data defined in Section 4.6.2 of {{RFC7518}} as input.
-      
-   The SealBase function internally creates the sending HPKE context by invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with "pkR" and "info". This yields the context "sctxt" and an encapsulation key "enc". The SealBase function then invokes the Seal() method on "sctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding ciphertext "ct". Note that Section 6 of {RFC9180} discusses Single-Shot APIs for encryption and decryption; SetupBaseS internally invokes Seal() method to return both "ct" and "enc". 
+The "aad" parameter in SetupBaseS function will take Encoded Protected Header value BASE64URL(UTF8(JWE
+Protected Header)) as input.
 
-   In summary, if SealBase() is successful, it will output a ciphertext "ct" and an encapsulated key "enc". In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded, since JSON lacks a way to directly represent arbitrary octet sequences. 
+In both modes, 'ek' will contain the value of "enc". In Integrated Encryption mode, the JWE Ciphertext will contain the value of 'ct'. In Key Encryption mode, the JWE Encrypted Key will contain the value of 'ct'. In Integrated Encryption mode, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
 
-   In both modes, "encapsulated_key" will contain the value of BASE64URL(enc). In Direct Key Agreement mode, JWE Ciphertext will contain the value of BASE64URL(ct). In Key Agreement with Key Wrapping mode, JWE Encrypted Key will contain the value of BASE64URL(ct). In Direct Key Agreement mode, JWE Encrypted Key will use the value of empty octet sequence.
+In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded (see Section 7.1 and 7.2 of {{RFC7518}}), since JSON lacks a way to directly represent arbitrary octet sequences.   
 
-## HPKE Decryption with OpenBase
-
-   The recipient will use the OpenBase(enc, skR, info, aad, ct) function
-   with the base64url decoded "encapsulated_key" and the "ciphertext" parameters 
-   received from the sender.  The "aad" and the "info" parameters are constructed 
-   from JWE AAD and JOSE context, respectively.
-
-   The OpenBase internally creates the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc", and "info". This yields the context "rctxt". The OpenBase function then decrypts "ct" by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", 
-   yielding "pt" or an error on failure.
-   
-   The OpenBase function will, if successful, decrypts "ct".  When
-   decrypted, the result will be either the CEK (when Key Agreement with Key Wrapping mode is
-   used), or the content (if Direct Key Agreement mode is used).  The CEK is the
-   symmetric key used to decrypt the ciphertext.
+In JWE Compact Serialization, the Single-Shot APIs specified in Section 6 of {{RFC9180}} for encryption and decryption cannot be used. This is because they require an 'aad' parameter, which takes the Encoded Protected Header comprising of 'ek' as input.
 
 ## Encapsulated JSON Web Keys
 
@@ -301,15 +292,14 @@ This example demonstrates the use of an encapsulted key with a JSON Web Encrypti
 }
 ~~~
 
+## HPKE Decryption with OpenBase
 
 
-# Post-Quantum Considerations
+The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" (output of base64url decoded JWE Ciphertext) by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. The "aad" parameter should be the Encoded Protected Header value BASE64URL(UTF8(JWE Protected Header)).
 
-The migration to Post-Quantum Cryptography (PQC) is unique in the history of modern digital cryptography in that neither the traditional algorithms nor the post-quantum algorithms are fully trusted to protect data for the required data lifetimes. The traditional algorithms, such as RSA and elliptic curve, will fall to quantum cryptalanysis, while the post-quantum algorithms face uncertainty about the underlying mathematics, compliance issues, unknown vulnerabilities, hardware and software implementations that have not had sufficient maturing time to rule out classical cryptanalytic attacks and implementation bugs.
+The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext. If a "zip" parameter was included, the recipient will uncompress the decrypted plaintext using the specified compression algorithm.
 
-Hybrid key exchange refers to using multiple key exchange algorithms simultaneously and combining the result with the goal of providing security even if all but one of the component algorithms is broken. It is motivated by transition to post-quantum cryptography. HPKE can be extended to support hybrid post-quantum Key Encapsulation Mechanisms (KEMs) as defined in {{?I-D.westerbaan-cfrg-hpke-xyber768d00-02}}. Kyber, which is a KEM does not support the static-ephemeral key exchange that allows HPKE based on DH based KEMs and its optional authenticated modes as discussed in Section 1.2 of {{?I-D.westerbaan-cfrg-hpke-xyber768d00-02}}. 
-
-The JOSE HPKE PQ/T hybrid ciphersuites are defined in {{IANA}}.
+The two modes can be distinguished by determining whether an "enc" member exists. If the "enc" member exists, it is a Key Encryption mode; otherwise, it is a Integrated Encryption mode.
 
 ## Example Hybrid Key Agreement Computation
 
@@ -328,7 +318,7 @@ to the following HPKE algorithm combination:
 {
    "alg": "HPKE-Base-P256-SHA256-AES128GCM",
    "kid": "7"
-   "encapsulated_key": "BIxvdeRjp3MILzyw06cBNIpXjGeAq6ZYZGaCqa9ykd/
+   "ek": "BIxvdeRjp3MILzyw06cBNIpXjGeAq6ZYZGaCqa9ykd/
     Cd+yTw9WHB4GChsEJeCVFczjcPcr/Nn4pUTQunbMNwOc=",
 }
               
@@ -361,15 +351,7 @@ With Expert Review category'.
 ## JOSE Algorithms Registry (Direct Key Agreement)
 
 - Algorithm Name: HPKE-Base-P256-SHA256-AES128GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P256-SHA256-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES-128-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -377,15 +359,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-P384-SHA384-AES256GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P384-SHA384-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -393,15 +367,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-P521-SHA512-AES256GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P521-SHA512-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -409,7 +375,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-AES128GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the AES-128-GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the AES-128-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -417,7 +383,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the ChaCha20Poly1305 AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -425,7 +391,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X448-SHA512-AES256GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -433,71 +399,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X448-SHA512-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X25519Kyber768-SHA256-AES256GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the X25519Kyber768Draft00 Hybrid KEM, the HKDF-SHA256 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X25519Kyber768-SHA256-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the X25519Kyber768Draft00 Hybrid KEM, the HKDF-SHA256 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP256-SHA256-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name:HPKE-Base-CP384-SHA512-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP521-SHA512-ChaCha20Poly1305
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP256-SHA256-AES128GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES128GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP384-SHA512-AES256GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP521-SHA512-AES256GCM
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES256GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the ChaCha20Poly1305 AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -507,15 +409,7 @@ With Expert Review category'.
 ## JOSE Algorithms Registry (Key Agreement with Key Wrapping)
 
 - Algorithm Name: HPKE-Base-P256-SHA256-AES128GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and Key wrapping with the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P256-SHA256-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and Key wrapping with the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and Key wrapping with the AES-128-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -523,15 +417,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-P384-SHA384-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and Key wrapping with the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P384-SHA384-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and Key wrapping with the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -539,15 +425,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-P521-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P521-SHA512-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -555,7 +433,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-AES128GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and Key wrapping with the AES-128-GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and Key wrapping with the AES-128-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -563,7 +441,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -571,7 +449,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X448-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES-256-GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -579,63 +457,7 @@ With Expert Review category'.
 - Algorithm Analysis Documents(s): TODO
 
 - Algorithm Name: HPKE-Base-X448-SHA512-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X25519Kyber768-SHA256-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the X25519Kyber768Draft00 Hybrid KEM, the HKDF-SHA256 KDF, and Key wrapping with the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X25519Kyber768-SHA256-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the X25519Kyber768Draft00 Hybrid KEM, the HKDF-SHA256 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP256-SHA256-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP521-SHA512-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE version 1 in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP256-SHA256-AES128GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and Key wrapping with the AES128GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP384-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP384, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES256GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-CP521-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(CP-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES256GCM AEAD.
+- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
@@ -644,7 +466,7 @@ With Expert Review category'.
 
 ## JOSE Header Parameters
 
-- Parameter Name: "encapsulated_key"
+- Parameter Name: "ek"
 - Parameter Description: HPKE encapsulated key
 - Parameter Information Class: Public
 - Used with "kty" Value(s): "OKP"
@@ -656,6 +478,6 @@ With Expert Review category'.
 # Acknowledgments
 {: numbered="false"}
 
-This specification leverages text from {{?I-D.ietf-cose-hpke}}. We would like to thank Matt Chanda and Aaron Parecki for their feedback.
+This specification leverages text from {{?I-D.ietf-cose-hpke}}. We would like to thank Matt Chanda, Ilari Liusvaara and Aaron Parecki for their feedback.
 
 

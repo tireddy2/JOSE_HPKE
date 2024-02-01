@@ -481,7 +481,21 @@ With Expert Review category'.
 
 ## JOSE Header Parameters
 
+### Authentication Using a Pre-Shared Key
 
+- Parameter Name: "psk_id"
+- Parameter Description: A key identifier (kid) for the pre-shared key as defined in { Section 5.1.1 of RFC9180 }
+- Parameter Information Class: Public
+- Change Controller: IESG
+- Specification Document(s): [[This specification]]
+
+### Authentication Using an Asymmetric Key
+
+- Parameter Name: "auth_kid"
+- Parameter Description: A key identifier (kid) for the asymmetric key as defined in { Section 5.1.4 of RFC9180 }
+- Parameter Information Class: Public
+- Change Controller: IESG
+- Specification Document(s): [[This specification]]
  
 --- back
 

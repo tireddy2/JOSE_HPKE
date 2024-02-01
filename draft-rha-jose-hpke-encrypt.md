@@ -216,25 +216,24 @@ The message encryption process is as follows.
 
    Two cases of plaintext need to be distinguished:
 
-   *  In Integrated Encryption mode, the plaintext "pt" passed into SetupBaseS
+   *  In Integrated Encryption mode, the plaintext "pt" passed into Seal
       is the content to be encrypted.  Hence, there is no intermediate
       layer utilizing a CEK.
 
    *  In Key Encryption mode, the plaintext "pt" passed into
-      SetupBaseS is the CEK. The CEK is a random byte sequence of length
+      Seal is the CEK. The CEK is a random byte sequence of length
       appropriate for the encryption algorithm. For example, AES-128-GCM 
       requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
-In the JWE Compact Serialization, the "aad" parameter in SetupBaseS function will take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. In the JWE JSON Serialization, the (compressed) plaintext will be encrypted using the CEK and Additional Authenticated Data value as explained in Step 15 of Section 5.1 of {{RFC7516}}.
+In the JWE Compact Serialization, the "aad" parameter in Seal function will take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. In the JWE JSON Serialization, the (compressed) plaintext will be encrypted using the CEK and Additional Authenticated Data value as explained in Step 15 of Section 5.1 of {{RFC7516}}.
 
 In JWE JSON Serialization, one of the following mechanisms must be selected to provide protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter in the unprotected header. The attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}:
 
-   * (Option 1) The "aad" parameter in SetupBaseS function will take the Additional Authenticated Data  
-     encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input to encrypt the CEK. This way
-     the CEK is bound to the encryption algorithm in the 'enc' parameter. If the attacker changes encrytion algorithm in the 'enc' parameter prior to delivery to the recipient, then the recipient will derive a different CEK', which will not assist the attacker in recovering the plaintext content.
+   * (Option 1) The "aad" parameter in Seal function will take the Additional Authenticated Data  
+     encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input to encrypt the CEK. If the attacker changes encrytion algorithm in the 'enc' parameter prior to delivery to the recipient, then the recipient will derive a different authentication tag, leading to decryption failure and resulting in an OpenError.     
 
    * (Option 2) The mitigation uses the HMAC-based Extract-and-Expand Key Derivation Function (HKDF) 
-     {{RFC5869}} to derive output keying materiam (OKM) from input key material (IKM). The IKM will be CEK. HKDF is used with the SHA-256 hash function. The derivation includes the algorithim in the 'enc' parameter as the info input value. 
+     {{RFC5869}} to derive output keying materiam (OKM) from input key material (IKM). The IKM will be CEK. HKDF is used with the SHA-256 hash function. The derivation includes the algorithim in the 'enc' parameter as the info input value. This way the CEK is bound to the encryption algorithm in the 'enc' parameter. If the attacker changes encrytion algorithm in the 'enc' parameter prior to delivery to the recipient, then the recipient will derive a different CEK', which will not assist the attacker in recovering the plaintext content.
 
 In both modes, 'ek' will contain the value of "enc". In Integrated Encryption mode, the JWE Ciphertext will contain the value of 'ct'. In Key Encryption mode, the JWE Encrypted Key will contain the value of 'ct'. In Integrated Encryption mode, the JWE Encrypted Key will use the value of an empty octet sequence. In both modes, the JWE Initialization Vector value will be an empty octet sequence. In both modes, the JWE Authentication Tag MUST be absent.
 

@@ -481,12 +481,7 @@ With Expert Review category'.
 
 ## JOSE Header Parameters
 
-- Parameter Name: "ek"
-- Parameter Description: HPKE encapsulated key
-- Parameter Information Class: Public
-- Used with "kty" Value(s): "OKP"
-- Change Controller: IESG
-- Specification Document(s): [[This specification]]
+
  
 --- back
 

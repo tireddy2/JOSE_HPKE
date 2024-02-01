@@ -227,7 +227,7 @@ The message encryption process is as follows.
 
 In the JWE Compact Serialization, the "aad" parameter in Seal function will take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. In the JWE JSON Serialization, the (compressed) plaintext will be encrypted using the CEK and Additional Authenticated Data value as explained in Step 15 of Section 5.1 of {{RFC7516}}.
 
-In JWE JSON Serialization, one of the following mechanisms must be selected to provide protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter in the unprotected header. The attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}:
+In JWE JSON Serialization, one of the following mechanisms must be selected to provide protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter in the protected header. The attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}:
 
    * (Option 1) The "aad" parameter in Seal function will take the Additional Authenticated Data  
      encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input to encrypt the CEK. If the attacker changes encrytion algorithm in the 'enc' parameter prior to delivery to the recipient, then the recipient will derive a different authentication tag, leading to decryption failure and resulting in an OpenError.     

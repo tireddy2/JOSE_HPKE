@@ -73,7 +73,6 @@ normative:
   
 informative:
   RFC8937:
-  RFC2630: 
   HPKE-IANA:
      author:
         org: IANA
@@ -127,7 +126,8 @@ carries the output to JOSE ({{RFC7516}}, {{RFC7518}}).
 
 This specification uses the following abbreviations and terms:
 
-- Content-encryption key (CEK), a term defined in CMS {{RFC2630}}.
+- Key Type (kty), see {{RFC7517}}.
+- Content Encryption Key (CEK), is defined in {{RFC7517}}.
 - Hybrid Public Key Encryption (HPKE) is defined in {{RFC9180}}.
 - pkR is the public key of the recipient, as defined in {{RFC9180}}.
 - skR is the private key of the recipient, as defined in {{RFC9180}}.
@@ -135,7 +135,7 @@ This specification uses the following abbreviations and terms:
 - Key Derivation Function (KDF), see {{RFC9180}}.
 - Authenticated Encryption with Associated Data (AEAD), see {{RFC9180}}.
 - Additional Authenticated Data (AAD), see {{RFC9180}}.
-- Key Type (kty), see {{RFC7517}}.
+
 
 # HPKE for JOSE
 
@@ -172,7 +172,7 @@ There exist two cases of HPKE plaintext which need to be distinguished:
 
 *  In Integrated Encryption mode, the plaintext "pt" passed into Seal
   is the content to be encrypted.  Hence, there is no intermediate
-  layer utilizing a content encryption key (CEK).
+  layer utilizing a CEK.
 
 *  In Key Encryption mode, the plaintext "pt" passed into
   Seal is the CEK. The CEK is a random byte sequence of length

@@ -70,9 +70,15 @@ normative:
   RFC7516:
   RFC7518:
   RFC7517:
+  JOSE-IANA:
+     author:
+        org: IANA
+     title: JSON Web Signature and Encryption Algorithms
+     target: https://www.iana.org/assignments/jose/jose.xhtml
   
 informative:
   RFC8937:
+
   HPKE-IANA:
      author:
         org: IANA
@@ -253,7 +259,7 @@ In Key Encryption mode:
 - The JWE Initialization Vector MUST be produced as described in { Section 5.1 of RFC7516 }
 - The JWE Authentication Tag MUST be produced as described in { Section 5.1 of RFC7516 }
 
-This example demonstrates the use of an encapsulated key with a JSON Web Encryption with Key Encryption as described in this document. 
+The following example demonstrates the use of Key Encryption with General JSON Serialization:
 
 ~~~
 {
@@ -290,7 +296,7 @@ This example demonstrates the use of an encapsulated key with a JSON Web Encrypt
   ]
 }
 ~~~
-{: #json-example align="left" title="Key Encryption Example"}
+{: #json-example align="left" title="Key Encryption with General JSON Serialization"}
 
 In the above example, the JWE Protected Header value is: 
 
@@ -300,34 +306,20 @@ In the above example, the JWE Protected Header value is:
 }
 ~~~
 
-## Example Hybrid Key Agreement Computation
-
-This example uses HPKE-Base-P256-SHA256-AES128GCM which corresponds
-to the following HPKE algorithm combination:
-
-- KEM: DHKEM(P-256, HKDF-SHA256)
-- KDF: HKDF-SHA256
-- AEAD: AES-128-GCM
-- Mode: Base
-- payload: "This is the content"
-- aad: ""
-
 # Ciphersuite Registration
 
 This specification registers a number of ciphersuites for use with HPKE.
-A ciphersuite is thereby a combination of several algorithm configurations:
+A ciphersuite is a group of algorithms, often sharing component algorithms such as hash functions, targeting a security level.
+An HPKE ciphersuite, is composed of the following choices:
 
 - HPKE Mode
-- KEM algorithm
-- KDF algorithm
-- AEAD algorithm
+- KEM Algorithm
+- KDF Algorithm
+- AEAD Algorithm
 
-The "KEM", "KDF", and "AEAD" values are conceptually taken from the HPKE IANA
-registry {{HPKE-IANA}}. Hence, JOSE-HPKE cannot use an algorithm combination
-that is not already available with HPKE.
+The "KEM", "KDF", and "AEAD" values are chosen from the HPKE IANA registry {{HPKE-IANA}}. 
 
-For better readability of the algorithm combination ciphersuites labels are
-build according to the following scheme: 
+For readability the algorithm ciphersuites labels are built according to the following scheme: 
 
 ~~~
 HPKE-<Mode>-<KEM>-<KDF>-<AEAD>
@@ -347,7 +339,6 @@ which authenticates using both a PSK and an asymmetric key.
 
 For a list of ciphersuite registrations, please see {{IANA}}.
 
-
 # Security Considerations
 
 This specification is based on HPKE and the security considerations of
@@ -365,17 +356,51 @@ HPKE relies on a source of randomness to be available on the device. In Key Agre
 with Key Wrapping mode, CEK has to be randomly generated and it MUST be
 ensured that the guidelines in {{RFC8937}} for random number generations are followed. 
 
+## Plaintext Compression
+
+Implementers are advised to review {{ Section 3.6 of RFC8725 }}, which states: 
+Compression of data SHOULD NOT be done before encryption, because such compressed data often reveals information about the plaintext.
+
+## Header Parameters
+
+Implementers are advised to review {{ Section 3.10 of RFC8725 }}, which comments on application processing of JWE Protected Headers.
+Additionally, Unprotected Headers can contain similar information which an attacker could leverage to mount denial of service, forgery or injection attacks.
+
+## Ensure Cryptographic Keys Have Sufficient Entropy
+
+Implementers are advised to review {{ Section 3.5 of RFC8725 }}, which comments on entropy requirements of keys.
+This is guidance is relevant to the public and private keys used in both Key Encryption and Integrated Encryption.
+This is guidance is relevant to the content encryption keys, used in Key Encryption mode.
+
+## Validate Cryptographic Inputs
+
+Implementers are advised to review {{ Section 3.4 of RFC8725 }}, which comments on the validation of cryptographic inputs.
+This is guidance is relevant to the public and private keys used in both Key Encryption and Integrated Encryption.
+Specifically the structure of the public and private keys and the "ek" value which are inputs to the HPKE KEM operations.
+
+## Use Appropriate Algorithms
+
+Implementers are advised to review {{ Section 3.2 of RFC8725 }}, which comments on the selection of appropriate algorithms.
+This is guidance is relevant to both Key Encryption and Integrated Encryption.
+When using Key Encryption, the strengh of the content encryption algorithm should not be significantly different from the strengh of the Key Agreement and Key Wrapping or Key Encryption algorithms used.
+
 #  IANA Considerations {#IANA}
 
-The following is added to the "JSON Web Key Types" registry:
+This document adds entries to {{JOSE-IANA}}.
+
+## JSON Web Key Types
+
+The following entry is added to the "JSON Web Key Types" registry:
 
 - "kty" Parameter Value: "EK"
-- Key Type Description: HPKE
+- Key Type Description: HPKE Encapsulated Key Type
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
 
-The following is added to the "JSON Web Key Parameters" registry:
+## JSON Web Key Parameters
+
+The following entry is added to the "JSON Web Key Parameters" registry:
 
 - Parameter Name: "ek"
 - Parameter Description: Encapsulated Key
@@ -383,11 +408,9 @@ The following is added to the "JSON Web Key Parameters" registry:
 - Used with "kty" Value(s): "EK"
 - Specification Document(s): [[TBD: This RFC]]
    
-This document requests IANA to add new values to the 'JOSE Algorithms' and to 
-the 'JOSE Header Parameters' registries in the 'Standards Action 
-With Expert Review category'.
+## JSON Web Signature and Encryption Algorithms
 
-## JOSE Algorithms Registry (Direct Key Agreement)
+The following entries are added to the "JSON Web Signature and Encryption Algorithms" registry:
 
 - Algorithm Name: HPKE-Base-P256-SHA256-AES128GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES-128-GCM AEAD.
@@ -445,75 +468,15 @@ With Expert Review category'.
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
-## JOSE Algorithms Registry (Key Agreement with Key Wrapping)
+## JSON Web Signature and Encryption Header Parameters
 
-- Algorithm Name: HPKE-Base-P256-SHA256-AES128GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and Key wrapping with the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P384-SHA384-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and Key wrapping with the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-P521-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X25519-SHA256-AES128GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and Key wrapping with the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X25519-SHA256-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X448-SHA512-AES256GCMKW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-- Algorithm Name: HPKE-Base-X448-SHA512-ChaCha20Poly1305KW
-- Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and Key wrapping with the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
-## JOSE Header Parameters
-
-### Authentication Using a Pre-Shared Key
+The following entries are added to the "JSON Web Signature and Encryption Header Parameters" registry:
 
 - Parameter Name: "psk_id"
 - Parameter Description: A key identifier (kid) for the pre-shared key as defined in { Section 5.1.1 of RFC9180 }
 - Parameter Information Class: Public
 - Change Controller: IESG
 - Specification Document(s): [[This specification]]
-
-### Authentication Using an Asymmetric Key
 
 - Parameter Name: "auth_kid"
 - Parameter Description: A key identifier (kid) for the asymmetric key as defined in { Section 5.1.4 of RFC9180 }

@@ -96,27 +96,16 @@ JOSE-native security mechanisms or by one of the authenticated variants of HPKE.
 
 This document defines the use of the HPKE with JOSE.
 
-
 --- middle
 
 # Introduction
 
 Hybrid public-key encryption (HPKE) {{RFC9180}} is a scheme that 
 provides public key encryption of arbitrary-sized plaintexts given a 
-recipient's public key. HPKE utilizes a non-interactive ephemeral-static 
-Diffie-Hellman exchange to establish a shared secret. The motivation for
-standardizing a public key encryption scheme is explained in the introduction
-of {{RFC9180}}.
+recipient's public key. 
 
-The HPKE specification provides a variant of public key encryption of
-arbitrary-sized plaintexts for a recipient public key. It also
-includes three authenticated variants, including one that authenticates
-possession of a pre-shared key, one that authenticates possession of
-a key encapsulation mechanism (KEM) private key, and one that
-authenticates possession of both a pre-shared key and a KEM private key.
-
-This specification utilizes HPKE as a foundational building block and
-carries the output to JOSE ({{RFC7516}}, {{RFC7518}}).
+This specification enables JSON Web Encryption (JWE) to leverage HPKE, 
+bringing support for KEMs and the possibility of Post Quantum or Hybrid KEMs to JWE.
 
 # Conventions and Definitions
 
@@ -136,33 +125,51 @@ This specification uses the following abbreviations and terms:
 - Authenticated Encryption with Associated Data (AEAD), see {{RFC9180}}.
 - Additional Authenticated Data (AAD), see {{RFC9180}}.
 
-
 # HPKE for JOSE
 
 ## Overview
 
-The JSON Web Algorithms (JWA) {{RFC7518}} in Section 4.6 defines two ways using the key agreement result 
-(a) Direct Key Agreement (b) Key Agreement with Key Wrapping. 
+JSON Web Encryption (JWE) {{RFC7516}} defines several serializations for expressing encrypted content with JSON: 
 
-This specification supports two uses of HPKE in JOSE, namely
+* Compact JWE Serialization 
+* General JWE JSON Serialization
+* Flattened JWE JSON Serialization
 
-  *  HPKE in a single recipient setup referred to as Integrated Encryption mode. In this case, the shared secret established through the HPKE will generate the content encryption key (CEK) and encrypts the plaintext.
+JSON Web Algorithms (JWA) {{Section 4.6 of RFC7518}} defines two ways to use public key cryptography with JWE:
+
+- Direct Key Agreement
+- Key Agreement with Key Wrapping
+
+The specification enables Hybrid Public Key Encryption (HPKE) {{RFC9180}} to be used with the serializations defined in JWE.
+
+Unless otherwise stated, no changes to the processes described in {{RFC7516}} have been made.
+
+This specification describes two modes of use for HPKE in JWE:
+
+  *  Integrated Encryption mode, where HPKE is used with a single recipient. This setup is conceptually similar to Direct Key Agreement, and is only compatible with JWE Compact Serialization.
   
-  *  HPKE in a multiple recipient setup referred to as Key Encryption mode. In this case, the shared secret established through the HPKE will wrap the CEK.
-
-In both modes, the existing JOSE header parameter, called 'epk', is used to convey the content of the "encapsulated key" structure defined in the HPKE specification. The "encapsulated key" structure represents the serialized form of a public key.
+  *  Key Encryption mode, where HPKE is used with multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping, and is only compatible with General JWE JSON Serialization, and Flattened JWE JSON Serialization.
 
 When the alg value is set to any of algorithms registered by this specification then the 'epk' header parameter MUST be present, and it MUST be a JSON Web Key as defined in {{EK}} of this document.
+The "ek" member of an 'epk' will contain the base64url encoded "enc" value produced by the encapsulate operation of the HPKE KEM.
 
-In both modes, the header parameter 'epk' will contain the 'ek' member. The "ek" member will contain the base64url encoded "enc" value produced by the encapsulate operation of the HPKE KEM.
+In all serializations, "ct" will be base64url encoded.
 
-In both JWE Compact Serialization and the JWE JSON Serialization, "ct" and "enc" will be base64url encoded (see Section 7.1 and 7.2 of {{RFC7518}}), since JSON lacks a way to directly represent arbitrary octet sequences.   
+The two modes (Integrated Encryption, and Key Encryption) can be distinguished by determining whether an "enc" JWE Protected Header parameter is present. 
 
-The two modes (Integrated Encryption, and Key Encryption) can be distinguished by determining whether an "enc" member is present in the protected header. 
+If "enc" is present in the JWE Protected Header, the mode is Key Encryption; otherwise, the mode is Integrated Encryption.
 
-If the "enc" member exists, it is a Key Encryption mode; otherwise, it is a Integrated Encryption mode.
+Interested readers will observe this is due to all recipients using the same JWE Protected Header when JSON Serializations are used, as described in {{Section 7.2.1 of RFC7516}}.
 
-## HPKE Encryption with SealBase
+We provide the following table for additional clarity:
+
+| Name                   | Recipients | Serializations | Content Encryption Key | Similar to
+|---
+| Integrated Encryption  | 1          | Compact        | Derived from HPKE      | Direct Key Agreement
+| Key Encryption         | Many       | JSON           | Encrypted by HPKE      | Key Agreement with Key Wrapping
+{: #serialization-mode-table align="left" title="JOSE HPKE Serializations and Modes"}
+
+## HPKE Encryption
 
 The message encryption process is as follows. 
 
@@ -179,7 +186,7 @@ There exist two cases of HPKE plaintext which need to be distinguished:
   appropriate for the encryption algorithm. For example, AES-128-GCM 
   requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
-## HPKE Decryption with OpenBase
+## HPKE Decryption
 
 The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. 
 
@@ -187,7 +194,7 @@ The Open function will, if successful, decrypts "ct".  When decrypted, the resul
 
 ## Encapsulated JSON Web Keys {#EK}
 
-An encapsulated key can be represented as JSON Web Key as described in { Section 4 of RFC7515 }.
+An encapsulated key is represented as JSON Web Key as described in { Section 4 of RFC7515 }.
 
 The "kty" parameter MUST be "EK".
 
@@ -206,13 +213,15 @@ This example demonstrates the representaton of an encapsulated key as a JWK.
 
 ### Integrated Encryption
 
-In Integrated Encryption mode, HPKE is employed to directly encrypt the (compressed) plaintext, and the resulting ciphertext is included in the JWE ciphertext. 
+This mode only supports a single recipient and JWE Compact serialization.
 
-In this mode, JWE Compact serialization MUST be used. The sender MUST specify the 'epk' and 'alg' parameters in the protected header to indicate the use of HPKE. Optionally, the protected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. 
+HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. 
 
-The Single-Shot APIs specified in Section 6 of {{RFC9180}} for encryption and decryption cannot be used. This is because they require an 'aad' parameter, which takes the Encoded Protected Header comprising of 'ek' as input.
+The sender MUST specify the 'epk' and 'alg' parameters in the protected header to indicate the use of HPKE. 
 
-In Integrated Encryption mode, HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. 
+The 'enc' (Encryption Algorithm) parameter MUST NOT be present. 
+
+This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. 
 
 In Integrated Encryption mode:
 
@@ -220,35 +229,29 @@ In Integrated Encryption mode:
 - The JWE Initialization Vector value MUST be empty. 
 - The JWE Authentication Tag MUST be empty.
 - The JWE Encrypted Key MUST be empty.
-- The "aad" parameter MUST take the Additional Authenticated Data encryption parameter defined in Step 14 of  
-  Section 5.1 of {{RFC7516}} as input. 
+- The "aad" parameter MUST take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
 
-In this setup, the 'enc' (Encryption Algorithm) parameter MUST NOT be present because the ciphersuite (KEM, KDF, AEAD) is fully-specified in the 'alg' parameter itself. 
-
-This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. 
-
-This example demonstrates the use of an encapsulated key with JSON Web Encryption Integrated Encryption and Compact Serialization:
+The following example demonstrates the use of Integrated Encryption with Compact Serialization:
 
 ~~~
 eyJhbGciOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCQU9TeWV3M05JLUkwNEd2WU1MT3Y0cDBEVG5WMWZjWnBFVW10dGs0YkRTdDAtakxzY0FDN3h3MjdORTFHZ0VuMUgtM3ZXSFA5eW1BOHl4aFRmVDBkYjQifX0...afBw3T1hUNjci4qq3ZZ-9KxnttB0iCEO_GUqbIStqYqB5DgRDpyYSuvoH1mMA31qKPqB41ld5mSP34yUys6WJM7nstDJ1-4nqUdhRpgfkGTECA.
 ~~~
-{: #compact-example align="left" title="Integrated Encryption Encryption"}
+{: #compact-example align="left" title="Integrated Encryption with Compact Serialization"}
 
 ### Key Encryption
 
-In Key Encryption mode, HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext. The (compressed) plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.
+This mode support more than one recipient, and JSON Serializations.
 
-In this mode, JWE JSON serialization MUST be used. The sender MUST place the 'epk' and 'alg' parameters in the per-recipient unprotected header to indicate the	use of HPKE. Optionally, the per-recipient unprotected header MAY contain the 'kid' parameter used to identify the static recipient public key used by the sender. The 'enc' (Encryption Algorithm) parameter MUST be present to identify the content encryption algorithm used to perform encryption on the plaintext to produce the ciphertext. The "enc" Header Parameter MUST occur only within the JWE Protected Header.	 		
+HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext. 
+The plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.
+
+The sender MUST place the 'epk' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE.  
+The "enc" (Encryption Algorithm) Header Parameter MUST be present in the JWE Protected Header.	 		
 
 In Key Encryption mode: 
 - The JWE Encrypted Key MUST be the base64url encoded 'ct' value.
 - The JWE Initialization Vector MUST be produced as described in { Section 5.1 of RFC7516 }
 - The JWE Authentication Tag MUST be produced as described in { Section 5.1 of RFC7516 }
-
-In JWE JSON Serialization, the following mechanisms MUST be selected to provide protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter in the protected header. The attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}:
-
-   * The "aad" parameter MUST take the Additional Authenticated Data encryption parameter defined in Step 14 of 
-     Section 5.1 of {{RFC7516}} as input to encrypt the CEK. If the attacker changes encrytion algorithm in the 'enc' parameter prior to delivery to the recipient, then the recipient will derive a different authentication tag, leading to decryption failure and resulting in an OpenError.     
 
 This example demonstrates the use of an encapsulated key with a JSON Web Encryption with Key Encryption as described in this document. 
 

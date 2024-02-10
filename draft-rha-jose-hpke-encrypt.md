@@ -168,24 +168,22 @@ The message encryption process is as follows.
 
 1. The sending HPKE context is created by invoking invoking SetupBaseS() (Section 5.1.1 of {{RFC9180}}) with the recipient's public key "pkR" and "info". The HPKE specification defines the "info" parameter as a context information structure that is used to ensure that the derived keying material is bound to the context of the transaction. The SetupBaseS function will be called with the default value of an empty string for the 'info' parameter. This yields the context "sctxt" and an encapsulation key "enc". 
 
-2. If "zip" parameter is present, compression is applied to the plaintext "pt" using the specified compression algorithm. Encrypt plaintext "pt" by invoking the Seal() method (Section 5.2 of {{RFC9180}}) on "sctxt" with "aad", yielding ciphertext "ct".
+There exist two cases of HPKE plaintext which need to be distinguished:
 
-   Two cases of plaintext need to be distinguished:
+*  In Integrated Encryption mode, the plaintext "pt" passed into Seal
+  is the content to be encrypted.  Hence, there is no intermediate
+  layer utilizing a content encryption key (CEK).
 
-   *  In Integrated Encryption mode, the plaintext "pt" passed into Seal
-      is the content to be encrypted.  Hence, there is no intermediate
-      layer utilizing a CEK.
-
-   *  In Key Encryption mode, the plaintext "pt" passed into
-      Seal is the CEK. The CEK is a random byte sequence of length
-      appropriate for the encryption algorithm. For example, AES-128-GCM 
-      requires a 16 byte key and the CEK would therefore be 16 bytes long.
+*  In Key Encryption mode, the plaintext "pt" passed into
+  Seal is the CEK. The CEK is a random byte sequence of length
+  appropriate for the encryption algorithm. For example, AES-128-GCM 
+  requires a 16 byte key and the CEK would therefore be 16 bytes long.
 
 ## HPKE Decryption with OpenBase
 
 The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. 
 
-The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext. If a "zip" parameter was included, the recipient will uncompress the decrypted plaintext using the specified compression algorithm.
+The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext.
 
 ## Encapsulated JSON Web Keys {#EK}
 

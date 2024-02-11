@@ -243,23 +243,28 @@ In Integrated Encryption mode:
 The following example demonstrates the use of Integrated Encryption with Compact Serialization:
 
 ~~~
-eyJhbGciOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCQU9TeWV3M05JLUkwNEd2WU1MT3Y0cDBEVG5WMWZjWnBFVW10dGs0YkRTdDAtakxzY0FDN3h3MjdORTFHZ0VuMUgtM3ZXSFA5eW1BOHl4aFRmVDBkYjQifX0...afBw3T1hUNjci4qq3ZZ-9KxnttB0iCEO_GUqbIStqYqB5DgRDpyYSuvoH1mMA31qKPqB41ld5mSP34yUys6WJM7nstDJ1-4nqUdhRpgfkGTECA.
+eyJhbGciOiJkaXIiLCJlbmMiOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCR05ranp0MDc2YnNSR2o3OGFYNUF6VF9IRU9KQmJZOXEyWm9fNWU3dGJLMGFQcXU0ZVQxV0kxNmp2UmxacXBNeXFaZlAtUndSNEp3dGF6XzhVOXRoWEEifX0...DG3qygxcMHw3iACy5mX_T4N4EqWc03W0nkTHjMJsC4nb6JS6vVj6wTGdlr5TOSr0ykaoyzpePXEvEyHhvpUwCyQQr6kbGlGuZsrJdUbZ728vmA.
 ~~~
 {: #integrated-encryption-compact align="left" title="Integrated Encryption with Compact Serialization"}
-
-Note: the example above needs to be updates to reflect the text below.
 
 In the above example, the JWE Protected Header value is: 
 
 ~~~
 {
-   "alg": "dir",
-   "enc": "HPKE-Base-P256-SHA256-AES128GCM"
+  "alg": "dir",
+  "enc": "HPKE-Base-P256-SHA256-AES128GCM",
+  "epk": {
+    "kty": "EK",
+    "ek": "BGNkjzt076bsRGj78aX5AzT_HEOJBbY9q2Zo_5e7tbK0aPqu4eT1WI16jvRlZqpMyqZfP-RwR4Jwtaz_8U9thXA"
+  }
 }
 ~~~
 
 ~~~
-todo
+{
+    "protected": "eyJhbGciOiJkaXIiLCJlbmMiOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCTzRFbGZXd0xKRDZWcERza3c5LWxWMm9OMDJ2U1FKTW55ZHk3enhvSVlKZ1kydk9taE44Q1BqSHdRM1NONkhTcnNHNElacVpHVUR3dExKZjBoeHFTWGsifX0",
+    "ciphertext": "1ATsw0jshqPrv8CFcm9Rem9Wfi1Ygv30sozlRTtNNzcaaZ828GqP0AXtqQ1Msv8YXI9XZqh81MK3QnlZ7pOBC1BP7j00J1rrHujdb3zvnOpmJg"
+}
 ~~~
 {: #integrated-encryption-json align="left" title="Integrated Encryption with JSON Serialization"}
 
@@ -267,12 +272,16 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-   "alg": "dir",
-   "enc": "HPKE-Base-P256-SHA256-AES128GCM"
+  "alg": "dir",
+  "enc": "HPKE-Base-P256-SHA256-AES128GCM",
+  "epk": {
+    "kty": "EK",
+    "ek": "BGNkjzt076bsRGj78aX5AzT_HEOJBbY9q2Zo_5e7tbK0aPqu4eT1WI16jvRlZqpMyqZfP-RwR4Jwtaz_8U9thXA"
+  }
 }
 ~~~
 
-When Integrated Encryption is represented in General JSON Serialization, `iv`, `tag` and `aad` must not be present.
+When Integrated Encryption is represented in General JSON Serialization, `iv`, `tag` and `aad` must not be present, as they are always empty.
 
 ### Key Encryption
 

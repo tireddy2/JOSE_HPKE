@@ -346,7 +346,13 @@ In the above example, the JWE Protected Header value is:
 ~~~
 
 ~~~
-todo
+{
+  "protected": "eyJlbmMiOiJBMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCUFJUS244bVFMNGhOMWF5b2tSOGdrcFR5NUhRbGQ0TjBIWFhCOWNYdGpVSVEzN3pzSkRMN1R1Z1ZrbUQxYUZZVHgtMGJNMHRmeHplakxjdFNES2pNUXMifX0",
+  "encrypted_key": "zR0ArfrVVRQ9-X_heDU2riwx36QxLBffRrKAWU-tLC4",
+  "iv": "o3v11Hw6gUxUN-pY",
+  "ciphertext": "Ny-2IDGHMI3MzVsUAVMGNoKAZfoewTZ1dkAIBikPy4eZUfHW_LPhhKpD6Mf4zYGkhAeLwGgJKjyDoFIj0EuDsEtJ",
+  "tag": "0sfzHJvxVoWt02EPxMTh8w"
+}
 ~~~
 {: #key-encryption-single-recipient-general-json align="left" title="Key Encryption (single recipient) General JSON Serialization"}
 
@@ -354,7 +360,11 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-   "enc": "A128GCM"
+  "enc": "A128GCM",
+  "epk": {
+    "kty": "EK",
+    "ek": "BPRTKn8mQL4hN1ayokR8gkpTy5HQld4N0HXXB9cXtjUIQ37zsJDL7TugVkmD1aFYTx-0bM0tfxzejLctSDKjMQs"
+  }
 }
 ~~~
 

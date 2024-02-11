@@ -430,7 +430,7 @@ This document adds entries to {{JOSE-IANA}}.
 The following entry is added to the "JSON Web Key Types" registry:
 
 - "kty" Parameter Value: "EK"
-- Key Type Description: HPKE Encapsulated Key Type
+- Key Type Description: HPKE Encapsulated Key Type (See issue #18)
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]

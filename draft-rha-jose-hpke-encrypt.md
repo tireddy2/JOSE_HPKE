@@ -245,6 +245,17 @@ eyJhbGciOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwi
 ~~~
 {: #compact-example align="left" title="Integrated Encryption with Compact Serialization"}
 
+Note: the example above needs to be updates to reflect the text below.
+
+In the above example, the JWE Protected Header value is: 
+
+~~~
+{
+   "alg": "dir",
+   "enc": "HPKE-Base-P256-SHA256-AES128GCM"
+}
+~~~
+
 ### Key Encryption
 
 This mode supports more than one recipient and JSON serializations.

@@ -70,6 +70,7 @@ normative:
   RFC7516:
   RFC7518:
   RFC7517:
+  RFC8725:
   JOSE-IANA:
      author:
         org: IANA
@@ -246,13 +247,12 @@ eyJhbGciOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwi
 
 ### Key Encryption
 
-This mode support more than one recipient, and JSON Serializations.
+This mode supports more than one recipient and JSON serializations.
 
 HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext. 
 The plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.
 
-The sender MUST place the 'epk' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE.  
-The "enc" (Encryption Algorithm) Header Parameter MUST be present in the JWE Protected Header.	 		
+The sender MUST place the 'epk' and 'alg' parameters in the per-recipient unprotected header to indicate the use of HPKE. The "enc" (Encryption Algorithm) Header Parameter MUST be present in the JWE Protected Header.	 		
 
 In Key Encryption mode: 
 - The JWE Encrypted Key MUST be the base64url encoded 'ct' value.
@@ -358,31 +358,27 @@ ensured that the guidelines in {{RFC8937}} for random number generations are fol
 
 ## Plaintext Compression
 
-Implementers are advised to review {{ Section 3.6 of RFC8725 }}, which states: 
+Implementers are advised to review Section 3.6 of {{RFC8725}}, which states: 
 Compression of data SHOULD NOT be done before encryption, because such compressed data often reveals information about the plaintext.
 
 ## Header Parameters
 
-Implementers are advised to review {{ Section 3.10 of RFC8725 }}, which comments on application processing of JWE Protected Headers.
+Implementers are advised to review Section 3.10 of {{RFC8725}}, which comments on application processing of JWE Protected Headers.
 Additionally, Unprotected Headers can contain similar information which an attacker could leverage to mount denial of service, forgery or injection attacks.
 
 ## Ensure Cryptographic Keys Have Sufficient Entropy
 
-Implementers are advised to review {{ Section 3.5 of RFC8725 }}, which comments on entropy requirements of keys.
-This is guidance is relevant to the public and private keys used in both Key Encryption and Integrated Encryption.
-This is guidance is relevant to the content encryption keys, used in Key Encryption mode.
+Implementers are advised to review Section 3.5 of {{RFC8725}}, which provides comments on entropy requirements for keys. This guidance is relevant to both public and private keys used in both Key Encryption and Integrated Encryption. Additionally, this guidance is applicable to content encryption keys used in Key Encryption mode.
 
 ## Validate Cryptographic Inputs
 
-Implementers are advised to review {{ Section 3.4 of RFC8725 }}, which comments on the validation of cryptographic inputs.
-This is guidance is relevant to the public and private keys used in both Key Encryption and Integrated Encryption.
-Specifically the structure of the public and private keys and the "ek" value which are inputs to the HPKE KEM operations.
+Implementers are advised to review Section 3.4 of {{RFC8725}}, which provides comments on the validation of cryptographic inputs. This guidance is relevant to both public and private keys used in both Key Encryption and Integrated Encryption, specifically focusing on the structure of the public and private keys, as well as the 'ek' value. These inputs are crucial for the HPKE KEM operations.
 
 ## Use Appropriate Algorithms
 
-Implementers are advised to review {{ Section 3.2 of RFC8725 }}, which comments on the selection of appropriate algorithms.
+Implementers are advised to review Section 3.2 of {{RFC8725}}, which comments on the selection of appropriate algorithms.
 This is guidance is relevant to both Key Encryption and Integrated Encryption.
-When using Key Encryption, the strengh of the content encryption algorithm should not be significantly different from the strengh of the Key Agreement and Key Wrapping or Key Encryption algorithms used.
+When using Key Encryption, the strength of the content encryption algorithm should not be significantly different from the strengh of the Key Encryption algorithms used.
 
 #  IANA Considerations {#IANA}
 

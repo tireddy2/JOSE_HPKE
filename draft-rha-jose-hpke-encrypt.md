@@ -368,6 +368,24 @@ In the above example, the JWE Protected Header value is:
 }
 ~~~
 
+~~~
+eyJlbmMiOiJBMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCSjdyZE5ia3Z3dW5zc2RqdTVXRGtBYXpMYUJYM0lkY0xSankxUkRTQTlzaWowMGpkeWJhSHVRUFR0NlAzMUJpMG5FMmtZV183TF90YUFxQUZLNzVEZWsifX0.xaAa0nFxNJxsQQ5J6EFdzUYROd2aV517o2kZnfwhO7s.AgBYEWTj-EMji17I.Ejwu2iEP4xs3FfGO_zTZYu35glQmUvd_qpHpvB1hNqg6Yz5ek3NsZRGMzd--HYWvABNslxBkRwrkZDXnv_BTgOTj.u0ac86ipoAwUZuYwkaKwNw
+~~~
+{: #key-encryption-single-recipient-compact align="left" title="Key Encryption (single recipient) Compact"}
+
+In the above example, the JWE Protected Header value is: 
+
+~~~
+{
+  "enc": "A128GCM",
+  "epk": {
+    "kty": "EK",
+    "ek": "BJ7rdNbkvwunssdju5WDkAazLaBX3IdcLRjy1RDSA9sij00jdybaHuQPTt6P31Bi0nE2kYW_7L_taAqAFK75Dek"
+  }
+}
+~~~
+
+
 # Ciphersuite Registration
 
 This specification registers a number of ciphersuites for use with HPKE.

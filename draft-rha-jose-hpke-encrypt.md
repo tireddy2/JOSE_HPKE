@@ -272,6 +272,8 @@ In the above example, the JWE Protected Header value is:
 }
 ~~~
 
+When Integrated Encryption is represented in General JSON Serialization, `iv`, `tag` and `aad` must not be present.
+
 ### Key Encryption
 
 This mode supports more than one recipient.

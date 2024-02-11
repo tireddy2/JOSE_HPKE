@@ -173,7 +173,7 @@ We provide the following table for additional clarity:
 | Name                   | Recipients | Serializations | Content Encryption Key | Similar to
 |---
 | Integrated Encryption  | 1          | Compact        | Derived from HPKE      | Direct Key Agreement
-| Key Encryption         | Many       | JSON           | Encrypted by HPKE      | Key Agreement with Key Wrapping
+| Key Encryption         | Many       | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
 {: #serialization-mode-table align="left" title="JOSE HPKE Serializations and Modes"}
 
 ## HPKE Encryption
@@ -199,6 +199,14 @@ The recipient will create the receiving HPKE context by invoking SetupBaseR() (S
 
 The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext.
 
+## Protected Header Parameters
+
+In order to ensure the security properties of HPKE, the following requirements MUST be followed for protected header parameters:
+
+* For Integrated Encryption, "epk" MUST be present, and MUST contain an Encapsulated JSON Web Key.
+* For Integrated Encryption, "alg" MUST be "dir", and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
+* For Key Encryption, "alg" MUST NOT be present and "enc" MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
+
 ## Encapsulated JSON Web Keys {#EK}
 
 An encapsulated key is represented as JSON Web Key as described in { Section 4 of RFC7515 }.
@@ -220,15 +228,9 @@ This example demonstrates the representaton of an encapsulated key as a JWK.
 
 ### Integrated Encryption
 
-This mode only supports a single recipient and JWE Compact serialization.
+This mode only supports a single recipient.
 
 HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. 
-
-The sender MUST specify the 'epk' and 'alg' parameters in the protected header to indicate the use of HPKE. 
-
-The 'enc' (Encryption Algorithm) parameter MUST NOT be present. 
-
-This is a deviation from the rule in Section 4.1.2 of {{RFC7516}}. 
 
 In Integrated Encryption mode:
 
@@ -253,6 +255,20 @@ In the above example, the JWE Protected Header value is:
 {
    "alg": "dir",
    "enc": "HPKE-Base-P256-SHA256-AES128GCM"
+}
+~~~
+
+~~~
+todo
+~~~
+{: #compact-example align="left" title="Key Encryption (single recipient) with Compact Serialization"}
+
+In the above example, the JWE Protected Header value is: 
+
+~~~
+{
+   "alg": "HPKE-Base-P256-SHA256-AES128GCM",
+   "enc": "A128GCM"
 }
 ~~~
 
@@ -308,7 +324,20 @@ The following example demonstrates the use of Key Encryption with General JSON S
   ]
 }
 ~~~
-{: #json-example align="left" title="Key Encryption with General JSON Serialization"}
+{: #key-encryption-multiple-recipient-general-json align="left" title="Key Encryption (multiple recipient) General JSON Serialization"}
+
+In the above example, the JWE Protected Header value is: 
+
+~~~
+{
+   "enc": "A128GCM"
+}
+~~~
+
+~~~
+todo
+~~~
+{: #key-encryption-single-recipient-general-json align="left" title="Key Encryption (single recipient) General JSON Serialization"}
 
 In the above example, the JWE Protected Header value is: 
 

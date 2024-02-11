@@ -485,6 +485,6 @@ The following entries are added to the "JSON Web Signature and Encryption Header
 # Acknowledgments
 {: numbered="false"}
 
-This specification leverages text from {{?I-D.ietf-cose-hpke}}. We would like to thank Matt Chanda, Ilari Liusvaara and Aaron Parecki for their feedback.
+This specification leverages text from {{?I-D.ietf-cose-hpke}}. We would like to thank Matt Chanda, Ilari Liusvaara, Aaron Parecki and Filip Skokan for their feedback.
 
 

@@ -172,7 +172,7 @@ We provide the following table for additional clarity:
 
 | Name                   | Recipients | Serializations | Content Encryption Key | Similar to
 |---
-| Integrated Encryption  | 1          | Compact        | Derived from HPKE      | Direct Key Agreement
+| Integrated Encryption  | 1          | Compact, JSON  | Derived from HPKE      | Direct Key Agreement
 | Key Encryption         | Many       | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
 {: #serialization-mode-table align="left" title="JOSE HPKE Serializations and Modes"}
 
@@ -245,7 +245,7 @@ The following example demonstrates the use of Integrated Encryption with Compact
 ~~~
 eyJhbGciOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCQU9TeWV3M05JLUkwNEd2WU1MT3Y0cDBEVG5WMWZjWnBFVW10dGs0YkRTdDAtakxzY0FDN3h3MjdORTFHZ0VuMUgtM3ZXSFA5eW1BOHl4aFRmVDBkYjQifX0...afBw3T1hUNjci4qq3ZZ-9KxnttB0iCEO_GUqbIStqYqB5DgRDpyYSuvoH1mMA31qKPqB41ld5mSP34yUys6WJM7nstDJ1-4nqUdhRpgfkGTECA.
 ~~~
-{: #compact-example align="left" title="Integrated Encryption with Compact Serialization"}
+{: #integrated-encryption-compact align="left" title="Integrated Encryption with Compact Serialization"}
 
 Note: the example above needs to be updates to reflect the text below.
 
@@ -261,20 +261,20 @@ In the above example, the JWE Protected Header value is:
 ~~~
 todo
 ~~~
-{: #compact-example align="left" title="Key Encryption (single recipient) with Compact Serialization"}
+{: #integrated-encryption-json align="left" title="Integrated Encryption with JSON Serialization"}
 
 In the above example, the JWE Protected Header value is: 
 
 ~~~
 {
-   "alg": "HPKE-Base-P256-SHA256-AES128GCM",
-   "enc": "A128GCM"
+   "alg": "dir",
+   "enc": "HPKE-Base-P256-SHA256-AES128GCM"
 }
 ~~~
 
 ### Key Encryption
 
-This mode supports more than one recipient and JSON serializations.
+This mode supports more than one recipient.
 
 HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext. 
 The plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.

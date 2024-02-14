@@ -288,8 +288,7 @@ This mode supports more than one recipient.
 HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext. 
 The plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.
 
-The sender MUST place the 'epk' and 'alg' parameters in the per-recipient unprotected header, or shared unprotected header to indicate the use of HPKE. 
-The "enc" (Encryption Algorithm) Header Parameter MUST be present in the JWE Protected Header.	 		
+When there are multiple recipients, the sender MUST place the 'epk' and 'alg' parameters in the per-recipient unprotected header or shared unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be present in the JWE Protected Header.
 
 In Key Encryption mode: 
 - The JWE Encrypted Key MUST be the base64url encoded 'ct' value.

@@ -153,18 +153,17 @@ Unless otherwise stated, no changes to the processes described in {{RFC7516}} ha
 
 This specification describes two modes of use for HPKE in JWE:
 
-  *  Integrated Encryption mode, where HPKE is used with a single recipient. This setup is conceptually similar to Direct Key Agreement, and is only compatible with JWE Compact Serialization.
+  *  Integrated Encryption mode, where HPKE is used with a single recipient. This setup is conceptually similar to Direct Key Agreement.
   
-  *  Key Encryption mode, where HPKE is used with multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping, and is only compatible with General JWE JSON Serialization, and Flattened JWE JSON Serialization.
+  *  Key Encryption mode, where HPKE is used with multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping.
 
-When the alg value is set to any of algorithms registered by this specification then the 'epk' header parameter MUST be present, and it MUST be a JSON Web Key as defined in {{EK}} of this document.
+When the alg value or enc value is set to any of algorithms registered by this specification then the 'epk' header parameter MUST be present, and it MUST be a JSON Web Key as defined in {{EK}} of this document.
+
 The "ek" member of an 'epk' will contain the base64url encoded "enc" value produced by the encapsulate operation of the HPKE KEM.
 
 In all serializations, "ct" will be base64url encoded.
 
-The two modes (Integrated Encryption, and Key Encryption) can be distinguished by determining whether an "enc" JWE Protected Header parameter is present. 
-
-If "enc" is present in the JWE Protected Header, the mode is Key Encryption; otherwise, the mode is Integrated Encryption.
+If the 'alg' header parameter is set to the 'HPKE-IntEnc' value (as defined in {{IANA}}), HPKE is used in Integrated Encryption mode; otherwise, it is in Key Encryption mode.
 
 Interested readers will observe this is due to all recipients using the same JWE Protected Header when JSON Serializations are used, as described in {{Section 7.2.1 of RFC7516}}.
 
@@ -205,7 +204,7 @@ The Open function will, if successful, decrypts "ct".  When decrypted, the resul
 In order to ensure the security properties of HPKE, the following requirements MUST be followed for protected header parameters:
 
 * For Integrated Encryption, "epk" MUST be present, and MUST contain an Encapsulated JSON Web Key.
-* For Integrated Encryption, "alg" MUST be "HPKE-IntEnc", as defined in {{IANA}}, and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
+* For Integrated Encryption, "alg" MUST be "HPKE-IntEnc" and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
 * For Key Encryption, "alg" MUST NOT be present and "enc" MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
 
 ## Encapsulated JSON Web Keys {#EK}
@@ -282,8 +281,6 @@ In the above example, the JWE Protected Header value is:
 }
 ~~~
 
-When Integrated Encryption is represented in General JSON Serialization, `iv`, `tag` and `aad` must not be present, as they are always empty.
-
 ### Key Encryption
 
 This mode supports more than one recipient.
@@ -313,7 +310,7 @@ The following example demonstrates the use of Key Encryption with General JSON S
       "encrypted_key": "yDVZLsO7-ecy_GCgEluwn9U723TCHNAzeYRRQPOfpHM",
       "header": {
         "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:adjwW6fyyZ94ZBjGjx_OpDEKHLGfd1ELkug_YmRAjCk",
-        "alg": "HPKE-Base-P256-SHA256-AES128GCM",
+        "enc": "HPKE-Base-P256-SHA256-AES128GCM",
         "epk": {
           "kty": "EK",
           "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
@@ -499,7 +496,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-P256-SHA256-AES128GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "enc"
+- Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -507,7 +504,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-P384-SHA384-AES256GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "enc"
+- Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -515,7 +512,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-P521-SHA512-AES256GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "enc"
+- Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -523,7 +520,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-AES128GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "enc"
+- Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -531,7 +528,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-ChaCha20Poly1305
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "enc"
+- Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -539,7 +536,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X448-SHA512-AES256GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "enc"
+- Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -547,7 +544,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X448-SHA512-ChaCha20Poly1305
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "enc"
+- Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]

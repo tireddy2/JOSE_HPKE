@@ -174,6 +174,7 @@ We provide the following table for additional clarity:
 |---
 | Integrated Encryption  | 1          | Compact, JSON  | Derived from HPKE      | Direct Key Agreement
 | Key Encryption         | Many       | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
+| Key Encryption         | 1          | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
 {: #serialization-mode-table align="left" title="JOSE HPKE Serializations and Modes"}
 
 ## HPKE Encryption
@@ -204,7 +205,7 @@ The Open function will, if successful, decrypts "ct".  When decrypted, the resul
 In order to ensure the security properties of HPKE, the following requirements MUST be followed for protected header parameters:
 
 * For Integrated Encryption, "epk" MUST be present, and MUST contain an Encapsulated JSON Web Key.
-* For Integrated Encryption, "alg" MUST be "dir", and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
+* For Integrated Encryption, "alg" MUST be ""HPKE-IntEnc", as defined in {{IANA}}, and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
 * For Key Encryption, "alg" MUST NOT be present and "enc" MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
 
 ## Encapsulated JSON Web Keys {#EK}
@@ -488,9 +489,17 @@ The following entry is added to the "JSON Web Key Parameters" registry:
 
 The following entries are added to the "JSON Web Signature and Encryption Algorithms" registry:
 
+- Algorithm Name: HPKE-IntEnc
+- Algorithm Description: Integrated Encryption mode for HPKE.
+- Algorithm Usage Location(s): "alg"
+- JOSE Implementation Requirements: Optional
+- Change Controller: IESG
+- Specification Document(s): [[TBD: This RFC]]
+- Algorithm Analysis Documents(s): TODO
+
 - Algorithm Name: HPKE-Base-P256-SHA256-AES128GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
+- Algorithm Usage Location(s): "enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -498,7 +507,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-P384-SHA384-AES256GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
+- Algorithm Usage Location(s): "enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -506,7 +515,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-P521-SHA512-AES256GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
+- Algorithm Usage Location(s): "enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -514,7 +523,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-AES128GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the AES-128-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
+- Algorithm Usage Location(s): "enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -522,7 +531,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X25519-SHA256-ChaCha20Poly1305
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
+- Algorithm Usage Location(s): "enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -530,7 +539,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X448-SHA512-AES256GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
-- Algorithm Usage Location(s): "alg"
+- Algorithm Usage Location(s): "enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]
@@ -538,7 +547,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 - Algorithm Name: HPKE-Base-X448-SHA512-ChaCha20Poly1305
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the ChaCha20Poly1305 AEAD.
-- Algorithm Usage Location(s): "alg"
+- Algorithm Usage Location(s): "enc"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG
 - Specification Document(s): [[TBD: This RFC]]

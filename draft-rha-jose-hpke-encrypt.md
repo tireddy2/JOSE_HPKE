@@ -205,7 +205,7 @@ The Open function will, if successful, decrypts "ct".  When decrypted, the resul
 In order to ensure the security properties of HPKE, the following requirements MUST be followed for protected header parameters:
 
 * For Integrated Encryption, "epk" MUST be present, and MUST contain an Encapsulated JSON Web Key.
-* For Integrated Encryption, "alg" MUST be ""HPKE-IntEnc", as defined in {{IANA}}, and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
+* For Integrated Encryption, "alg" MUST be "HPKE-IntEnc", as defined in {{IANA}}, and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
 * For Key Encryption, "alg" MUST NOT be present and "enc" MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
 
 ## Encapsulated JSON Web Keys {#EK}
@@ -252,7 +252,7 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-  "alg": "dir",
+  "alg": ""HPKE-IntEnc",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
   "epk": {
     "kty": "EK",
@@ -273,7 +273,7 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-  "alg": "dir",
+  "alg": ""HPKE-IntEnc",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
   "epk": {
     "kty": "EK",

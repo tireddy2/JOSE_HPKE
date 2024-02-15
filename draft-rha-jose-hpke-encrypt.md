@@ -172,7 +172,7 @@ We provide the following table for additional clarity:
 | Name                   | Recipients | Serializations | Content Encryption Key | Similar to
 |---
 | Integrated Encryption  | 1          | Compact, JSON  | Derived from HPKE      | Direct Key Agreement
-| Key Encryption         | 1 or More      | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
+| Key Encryption         | 1 or More  | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
 {: #serialization-mode-table align="left" title="JOSE HPKE Serializations and Modes"}
 
 ## HPKE Encryption
@@ -229,7 +229,7 @@ In Integrated Encryption mode:
 
 *  The "alg" Header Parameter MUST be "HPKE-IntEnc", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
 
-*  The JWE Ciphertext MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url. For example, if an AES-GCM scheme is used, the GCM authentication tag is placed at the end of the HPKE ciphertext output.
+*  The JWE Ciphertext MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url.
 
 *  The JWE Initialization Vector value MUST be absent. 
 

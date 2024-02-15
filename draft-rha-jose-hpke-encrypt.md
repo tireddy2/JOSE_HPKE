@@ -199,14 +199,6 @@ The recipient will create the receiving HPKE context by invoking SetupBaseR() (S
 
 The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext.
 
-## Protected Header Parameters
-
-In order to ensure the security properties of HPKE, the following requirements MUST be followed for protected header parameters:
-
-* For Integrated Encryption, "epk" MUST be present, and MUST contain an Encapsulated JSON Web Key.
-* For Integrated Encryption, "alg" MUST be "HPKE-IntEnc" and "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
-* For Key Encryption, "alg" MUST NOT be present and "enc" MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}.
-
 ## Encapsulated JSON Web Keys {#EK}
 
 An encapsulated key is represented as JSON Web Key as described in { Section 4 of RFC7515 }.
@@ -234,11 +226,20 @@ HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext
 
 In Integrated Encryption mode:
 
-- The JWE Ciphertext MUST be the base64url encoded 'ct' value.
-- The JWE Initialization Vector value MUST be empty. 
-- The JWE Authentication Tag MUST be empty.
-- The JWE Encrypted Key MUST be empty.
-- The "aad" parameter MUST take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
+*  The "epk" Header Parameter MUST be present, it MUST contain an Encapsulated JSON Web Key and it MUST occur only within the JWE Protected Header.
+
+*  The "alg" Header Parameter MUST be "HPKE-IntEnc", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
+
+*  The JWE Ciphertext MUST be the base64url encoded 'ct' value.
+
+*  The JWE Initialization Vector value MUST be empty. 
+
+*  The JWE Authentication Tag MUST be empty.
+
+*  The JWE Encrypted Key MUST be empty.
+
+*  The "aad" parameter MUST take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
+
 
 The following example demonstrates the use of Integrated Encryption with Compact Serialization:
 
@@ -288,12 +289,17 @@ This mode supports more than one recipient.
 HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext. 
 The plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.
 
-When there are multiple recipients, the sender MUST place the 'epk' and 'alg' parameters in the per-recipient unprotected header or shared unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be present in the JWE Protected Header.
+When there are multiple recipients, the sender MUST place the 'epk' parameter in the per-recipient unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}, and it MUST be present in the JWE Protected Header.
 
 In Key Encryption mode: 
-- The JWE Encrypted Key MUST be the base64url encoded 'ct' value.
-- The JWE Initialization Vector MUST be produced as described in { Section 5.1 of RFC7516 }
-- The JWE Authentication Tag MUST be produced as described in { Section 5.1 of RFC7516 }
+
+*  The JWE Encrypted Key MUST be the base64url encoded 'ct' value.
+
+*  The JWE Initialization Vector MUST be produced as described in { Section 5.1 of RFC7516 }.
+
+*  The JWE Authentication Tag MUST be produced as described in { Section 5.1 of RFC7516 }.
+
+
 
 The following example demonstrates the use of Key Encryption with General JSON Serialization:
 

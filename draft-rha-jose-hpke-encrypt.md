@@ -232,11 +232,11 @@ In Integrated Encryption mode:
 
 *  The JWE Ciphertext MUST be the base64url encoded 'ct' value.
 
-*  The JWE Initialization Vector value MUST be empty. 
+*  The JWE Initialization Vector value MUST be absent. 
 
-*  The JWE Authentication Tag MUST be empty.
+*  The JWE Authentication Tag MUST be absent.
 
-*  The JWE Encrypted Key MUST be empty.
+*  The JWE Encrypted Key MUST be absent.
 
 *  The HPKE "aad" parameter MUST be set to the JWE Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
 

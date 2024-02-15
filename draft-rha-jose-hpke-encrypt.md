@@ -230,13 +230,13 @@ In Integrated Encryption mode:
 
 *  The "alg" Header Parameter MUST be "HPKE-IntEnc", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
 
-*  The JWE Ciphertext MUST be the base64url encoded 'ct' value.
+*  The JWE Ciphertext MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url. For example, if an AES-GCM scheme is used, the GCM authentication tag is placed at the end of the HPKE ciphertext output.
 
-*  The JWE Initialization Vector value MUST be absent. 
+*  The JWE Initialization Vector value MUST be empty. 
 
-*  The JWE Authentication Tag MUST be absent.
+*  The JWE Authentication Tag MUST be empty.
 
-*  The JWE Encrypted Key MUST be absent.
+*  The JWE Encrypted Key MUST be empty.
 
 *  The HPKE "aad" parameter MUST be set to the JWE Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
 
@@ -293,13 +293,7 @@ When there are multiple recipients, the sender MUST place the 'epk' parameter in
 
 In Key Encryption mode: 
 
-*  The JWE Encrypted Key MUST be the base64url encoded 'ct' value.
-
-*  The JWE Initialization Vector MUST be produced as described in { Section 5.1 of RFC7516 }.
-
-*  The JWE Authentication Tag MUST be produced as described in { Section 5.1 of RFC7516 }.
-
-
+*  The JWE Ciphertext MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url.
 
 The following example demonstrates the use of Key Encryption with General JSON Serialization:
 

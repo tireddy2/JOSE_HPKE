@@ -173,7 +173,6 @@ We provide the following table for additional clarity:
 |---
 | Integrated Encryption  | 1          | Compact, JSON  | Derived from HPKE      | Direct Key Agreement
 | Key Encryption         | 1 or More      | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
-| Key Encryption         | 1          | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
 {: #serialization-mode-table align="left" title="JOSE HPKE Serializations and Modes"}
 
 ## HPKE Encryption

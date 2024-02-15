@@ -251,7 +251,7 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-  "alg": ""HPKE-IntEnc",
+  "alg": "HPKE-IntEnc",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
   "epk": {
     "kty": "EK",

@@ -155,7 +155,7 @@ This specification describes two modes of use for HPKE in JWE:
 
   *  Integrated Encryption mode, where HPKE is used with a single recipient. This setup is conceptually similar to Direct Key Agreement.
   
-  *  Key Encryption mode, where HPKE is used with multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping.
+  *  Key Encryption mode, where HPKE may be used with multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping.
 
 When the alg value or enc value is set to any of algorithms registered by this specification then the 'epk' header parameter MUST be present, and it MUST be a JSON Web Key as defined in {{EK}} of this document.
 

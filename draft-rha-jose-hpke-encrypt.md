@@ -238,7 +238,7 @@ In Integrated Encryption mode:
 
 *  The JWE Encrypted Key MUST be empty.
 
-*  The "aad" parameter MUST take the Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
+*  The HPKE "aad" parameter MUST be set to the JWE Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
 
 
 The following example demonstrates the use of Integrated Encryption with Compact Serialization:

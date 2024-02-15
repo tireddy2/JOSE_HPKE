@@ -350,7 +350,7 @@ In the above example, the JWE Protected Header value is:
   "tag": "0sfzHJvxVoWt02EPxMTh8w"
 }
 ~~~
-{: #key-encryption-single-recipient-general-json align="left" title="Key Encryption (single recipient) General JSON Serialization"}
+{: #key-encryption-single-recipient-flattened-json align="left" title="Key Encryption (single recipient) Flattened JSON Serialization"}
 
 In the above example, the JWE Protected Header value is: 
 

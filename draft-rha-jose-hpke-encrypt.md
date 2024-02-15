@@ -289,7 +289,7 @@ This mode supports more than one recipient.
 HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE ciphertext. 
 The plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.
 
-When there are multiple recipients, the sender MUST place the 'epk' parameter in the per-recipient unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}, and it MUST be present in the JWE Protected Header.
+When there are multiple recipients, the sender MUST place the 'epk' parameter in the per-recipient unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}, and it MUST be present in the JWE Protected Header. The integrity-protected 'enc' parameter provides protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter. This attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}.
 
 In Key Encryption mode: 
 

@@ -292,7 +292,7 @@ When there are multiple recipients, the sender MUST place the 'epk' parameter in
 
 In Key Encryption mode: 
 
-*  The JWE Ciphertext MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url.
+*  The JWE Encrypted Key MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url.
 
 The following example demonstrates the use of Key Encryption with General JSON Serialization:
 

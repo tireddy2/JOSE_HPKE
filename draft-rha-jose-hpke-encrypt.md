@@ -315,7 +315,7 @@ The following example demonstrates the use of Key Encryption with General JSON S
       "encrypted_key": "yDVZLsO7-ecy_GCgEluwn9U723TCHNAzeYRRQPOfpHM",
       "header": {
         "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:adjwW6fyyZ94ZBjGjx_OpDEKHLGfd1ELkug_YmRAjCk",
-        "enc": "HPKE-Base-P256-SHA256-AES128GCM",
+        "alg": "HPKE-Base-P256-SHA256-AES128GCM",
         "epk": {
           "kty": "EK",
           "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"

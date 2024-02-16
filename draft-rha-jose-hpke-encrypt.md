@@ -343,7 +343,7 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-  "protected": "eyJlbmMiOiJBMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCUFJUS244bVFMNGhOMWF5b2tSOGdrcFR5NUhRbGQ0TjBIWFhCOWNYdGpVSVEzN3pzSkRMN1R1Z1ZrbUQxYUZZVHgtMGJNMHRmeHplakxjdFNES2pNUXMifX0",
+  "protected": "eyJhbGciOiAiSFBLRS1CYXNlLVAyNTYtU0hBMjU2LUFFUzEyOEdDTSIsImVuYyI6IkExMjhHQ00iLCJlcGsiOnsia3R5IjoiRUsiLCJlayI6IkJQUlRLbjhtUUw0aE4xYXlva1I4Z2twVHk1SFFsZDROMEhYWEI5Y1h0alVJUTM3enNKREw3VHVnVmttRDFhRllUeC0wYk0wdGZ4emVqTGN0U0RLak1RcyJ9fQ",
   "encrypted_key": "zR0ArfrVVRQ9-X_heDU2riwx36QxLBffRrKAWU-tLC4",
   "iv": "o3v11Hw6gUxUN-pY",
   "ciphertext": "Ny-2IDGHMI3MzVsUAVMGNoKAZfoewTZ1dkAIBikPy4eZUfHW_LPhhKpD6Mf4zYGkhAeLwGgJKjyDoFIj0EuDsEtJ",
@@ -356,7 +356,9 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-  "enc": "A128GCM",
+
+  "alg": "HPKE-Base-P256-SHA256-AES128GCM",
+  "enc": "A128GCM",  
   "epk": {
     "kty": "EK",
     "ek": "BPRTKn8mQL4hN1ayokR8gkpTy5HQld4N0HXXB9cXtjUIQ37zsJDL7TugVkmD1aFYTx-0bM0tfxzejLctSDKjMQs"
@@ -365,7 +367,7 @@ In the above example, the JWE Protected Header value is:
 ~~~
 
 ~~~
-eyJlbmMiOiJBMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCSjdyZE5ia3Z3dW5zc2RqdTVXRGtBYXpMYUJYM0lkY0xSankxUkRTQTlzaWowMGpkeWJhSHVRUFR0NlAzMUJpMG5FMmtZV183TF90YUFxQUZLNzVEZWsifX0.xaAa0nFxNJxsQQ5J6EFdzUYROd2aV517o2kZnfwhO7s.AgBYEWTj-EMji17I.Ejwu2iEP4xs3FfGO_zTZYu35glQmUvd_qpHpvB1hNqg6Yz5ek3NsZRGMzd--HYWvABNslxBkRwrkZDXnv_BTgOTj.u0ac86ipoAwUZuYwkaKwNw
+eyJhbGciOiAiSFBLRS1CYXNlLVAyNTYtU0hBMjU2LUFFUzEyOEdDTSIsImVuYyI6IkExMjhHQ00iLCJlcGsiOnsia3R5IjoiRUsiLCJlayI6IkJKN3JkTmJrdnd1bnNzZGp1NVdEa0FhekxhQlgzSWRjTFJqeTFSRFNBOXNpajAwamR5YmFIdVFQVHQ2UDMxQmkwbkUya1lXXzdMX3RhQXFBRks3NURlayJ9fQ.xaAa0nFxNJxsQQ5J6EFdzUYROd2aV517o2kZnfwhO7s.AgBYEWTj-EMji17I.Ejwu2iEP4xs3FfGO_zTZYu35glQmUvd_qpHpvB1hNqg6Yz5ek3NsZRGMzd--HYWvABNslxBkRwrkZDXnv_BTgOTj.u0ac86ipoAwUZuYwkaKwNw
 ~~~
 {: #key-encryption-single-recipient-compact align="left" title="Key Encryption (single recipient) Compact"}
 
@@ -373,6 +375,7 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
+  "alg": "HPKE-Base-P256-SHA256-AES128GCM",
   "enc": "A128GCM",
   "epk": {
     "kty": "EK",

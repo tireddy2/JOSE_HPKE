@@ -153,9 +153,9 @@ Unless otherwise stated, no changes to the processes described in {{RFC7516}} ha
 
 This specification describes two modes of use for HPKE in JWE:
 
-  *  Integrated Encryption mode, where HPKE is used with a single recipient. This setup is conceptually similar to Direct Key Agreement.
+  *  HPKE Direct Encryption mode, where HPKE is used to encrypt the plaintext. This mode can only be used with a single recipient. This setup is conceptually similar to Direct Key Agreement.
   
-  *  Key Encryption mode, where HPKE may be used with multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping.
+  *  HPKE Key Encryption mode, where HPKE is used to encrypt a content encryption key (CEK) and the CEK is subsequently used to encrypt the plaintext. This mode supports multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping.
 
 When the alg value or enc value is set to any of algorithms registered by this specification then the 'epk' header parameter MUST be present, and it MUST be a JSON Web Key as defined in {{EK}} of this document.
 
@@ -163,7 +163,7 @@ The "ek" member of an 'epk' will contain the base64url encoded "enc" value produ
 
 In all serializations, "ct" will be base64url encoded.
 
-If the 'alg' header parameter is set to the 'HPKE-IntEnc' value (as defined in {{IANA}}), HPKE is used in Integrated Encryption mode; otherwise, it is in Key Encryption mode.
+If the 'alg' header parameter is set to the 'HPKE-DirEnc' value (as defined in {{IANA}}), HPKE is used in Direct Encryption mode; otherwise, it is in Key Encryption mode.
 
 Interested readers will observe this is due to all recipients using the same JWE Protected Header when JSON Serializations are used, as described in {{Section 7.2.1 of RFC7516}}.
 
@@ -171,7 +171,7 @@ We provide the following table for additional clarity:
 
 | Name                   | Recipients | Serializations | Content Encryption Key | Similar to
 |---
-| Integrated Encryption  | 1          | Compact, JSON  | Derived from HPKE      | Direct Key Agreement
+| Direct Encryption      | 1          | Compact, JSON  | Derived from HPKE      | Direct Key Agreement
 | Key Encryption         | 1 or More  | Compact, JSON  | Encrypted by HPKE      | Key Agreement with Key Wrapping
 {: #serialization-mode-table align="left" title="JOSE HPKE Serializations and Modes"}
 
@@ -183,11 +183,11 @@ The message encryption process is as follows.
 
 There exist two cases of HPKE plaintext which need to be distinguished:
 
-*  In Integrated Encryption mode, the plaintext "pt" passed into Seal
+*  In HPKE Direct Encryption mode, the plaintext "pt" passed into Seal
   is the content to be encrypted.  Hence, there is no intermediate
   layer utilizing a CEK.
 
-*  In Key Encryption mode, the plaintext "pt" passed into
+*  In HPKE Key Encryption mode, the plaintext "pt" passed into
   Seal is the CEK. The CEK is a random byte sequence of length
   appropriate for the encryption algorithm. For example, AES-128-GCM 
   requires a 16 byte key and the CEK would therefore be 16 bytes long.
@@ -196,7 +196,7 @@ There exist two cases of HPKE plaintext which need to be distinguished:
 
 The recipient will create the receiving HPKE context by invoking SetupBaseR() (Section 5.1.1 of {{RFC9180}}) with "skR", "enc" (output of base64url decoded 'ek'), and "info" (empty string). This yields the context "rctxt". The receiver then decrypts "ct" by invoking the Open() method on "rctxt" (Section 5.2 of {{RFC9180}}) with "aad", yielding "pt" or an error on failure. 
 
-The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Integrated Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext.
+The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Direct Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext.
 
 ## Encapsulated JSON Web Keys {#EK}
 
@@ -217,17 +217,17 @@ This example demonstrates the representaton of an encapsulated key as a JWK.
 }
 ~~~
 
-### Integrated Encryption
+### HPKE Direct Encryption
 
 This mode only supports a single recipient.
 
 HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext is included in the JWE ciphertext. 
 
-In Integrated Encryption mode:
+In HPKE Direct Encryption mode:
 
 *  The "epk" Header Parameter MUST be present, it MUST contain an Encapsulated JSON Web Key and it MUST occur only within the JWE Protected Header.
 
-*  The "alg" Header Parameter MUST be "HPKE-IntEnc", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
+*  The "alg" Header Parameter MUST be "HPKE-DirEnc", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
 
 *  The JWE Ciphertext MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url.
 
@@ -240,18 +240,18 @@ In Integrated Encryption mode:
 *  The HPKE "aad" parameter MUST be set to the JWE Additional Authenticated Data encryption parameter defined in Step 14 of Section 5.1 of {{RFC7516}} as input. 
 
 
-The following example demonstrates the use of Integrated Encryption with Compact Serialization:
+The following example demonstrates the use of Direct Encryption with Compact Serialization:
 
 ~~~
 eyJhbGciOiJkaXIiLCJlbmMiOiJIUEtFLUJhc2UtUDI1Ni1TSEEyNTYtQUVTMTI4R0NNIiwiZXBrIjp7Imt0eSI6IkVLIiwiZWsiOiJCR05ranp0MDc2YnNSR2o3OGFYNUF6VF9IRU9KQmJZOXEyWm9fNWU3dGJLMGFQcXU0ZVQxV0kxNmp2UmxacXBNeXFaZlAtUndSNEp3dGF6XzhVOXRoWEEifX0...DG3qygxcMHw3iACy5mX_T4N4EqWc03W0nkTHjMJsC4nb6JS6vVj6wTGdlr5TOSr0ykaoyzpePXEvEyHhvpUwCyQQr6kbGlGuZsrJdUbZ728vmA.
 ~~~
-{: #integrated-encryption-compact align="left" title="Integrated Encryption with Compact Serialization"}
+{: #direct-encryption-compact align="left" title="Direct Encryption with Compact Serialization"}
 
 In the above example, the JWE Protected Header value is: 
 
 ~~~
 {
-  "alg": "HPKE-IntEnc",
+  "alg": "HPKE-DirEnc",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
   "epk": {
     "kty": "EK",
@@ -266,13 +266,13 @@ In the above example, the JWE Protected Header value is:
     "ciphertext": "1ATsw0jshqPrv8CFcm9Rem9Wfi1Ygv30sozlRTtNNzcaaZ828GqP0AXtqQ1Msv8YXI9XZqh81MK3QnlZ7pOBC1BP7j00J1rrHujdb3zvnOpmJg"
 }
 ~~~
-{: #integrated-encryption-json align="left" title="Integrated Encryption with JSON Serialization"}
+{: #direct-encryption-json align="left" title="Direct Encryption with JSON Serialization"}
 
 In the above example, the JWE Protected Header value is: 
 
 ~~~
 {
-  "alg": ""HPKE-IntEnc",
+  "alg": "HPKE-DirEnc",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
   "epk": {
     "kty": "EK",
@@ -281,7 +281,7 @@ In the above example, the JWE Protected Header value is:
 }
 ~~~
 
-### Key Encryption
+### HPKE Key Encryption
 
 This mode supports more than one recipient.
 
@@ -290,7 +290,7 @@ The plaintext will be encrypted using the CEK as explained in Step 15 of Section
 
 When there are multiple recipients, the sender MUST place the 'epk' parameter in the per-recipient unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}, and it MUST be present in the JWE Protected Header. The integrity-protected 'enc' parameter provides protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter. This attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}.
 
-In Key Encryption mode: 
+In HPKE Key Encryption mode: 
 
 *  The JWE Encrypted Key MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url.
 
@@ -447,16 +447,16 @@ Additionally, Unprotected Headers can contain similar information which an attac
 
 ## Ensure Cryptographic Keys Have Sufficient Entropy
 
-Implementers are advised to review Section 3.5 of {{RFC8725}}, which provides comments on entropy requirements for keys. This guidance is relevant to both public and private keys used in both Key Encryption and Integrated Encryption. Additionally, this guidance is applicable to content encryption keys used in Key Encryption mode.
+Implementers are advised to review Section 3.5 of {{RFC8725}}, which provides comments on entropy requirements for keys. This guidance is relevant to both public and private keys used in both Key Encryption and Direct Encryption. Additionally, this guidance is applicable to content encryption keys used in Key Encryption mode.
 
 ## Validate Cryptographic Inputs
 
-Implementers are advised to review Section 3.4 of {{RFC8725}}, which provides comments on the validation of cryptographic inputs. This guidance is relevant to both public and private keys used in both Key Encryption and Integrated Encryption, specifically focusing on the structure of the public and private keys, as well as the 'ek' value. These inputs are crucial for the HPKE KEM operations.
+Implementers are advised to review Section 3.4 of {{RFC8725}}, which provides comments on the validation of cryptographic inputs. This guidance is relevant to both public and private keys used in both Key Encryption and Direct Encryption, specifically focusing on the structure of the public and private keys, as well as the 'ek' value. These inputs are crucial for the HPKE KEM operations.
 
 ## Use Appropriate Algorithms
 
 Implementers are advised to review Section 3.2 of {{RFC8725}}, which comments on the selection of appropriate algorithms.
-This is guidance is relevant to both Key Encryption and Integrated Encryption.
+This is guidance is relevant to both Key Encryption and Direct Encryption.
 When using Key Encryption, the strength of the content encryption algorithm should not be significantly different from the strengh of the Key Encryption algorithms used.
 
 #  IANA Considerations {#IANA}
@@ -487,8 +487,8 @@ The following entry is added to the "JSON Web Key Parameters" registry:
 
 The following entries are added to the "JSON Web Signature and Encryption Algorithms" registry:
 
-- Algorithm Name: HPKE-IntEnc
-- Algorithm Description: Integrated Encryption mode for HPKE.
+- Algorithm Name: HPKE-DirEnc
+- Algorithm Description: HPKE Direct Encryption mode
 - Algorithm Usage Location(s): "alg"
 - JOSE Implementation Requirements: Optional
 - Change Controller: IESG

@@ -163,7 +163,7 @@ The "ek" member of an 'epk' will contain the base64url encoded "enc" value produ
 
 In all serializations, "ct" will be base64url encoded.
 
-If the 'alg' header parameter is set to the 'HPKE-DirEnc' value (as defined in {{IANA}}), HPKE is used in Direct Encryption mode; otherwise, it is in Key Encryption mode.
+If the 'alg' header parameter is set to the "dir" value (as defined in {{IANA}}), HPKE is used in Direct Encryption mode; otherwise, it is in Key Encryption mode.
 
 Interested readers will observe this is due to all recipients using the same JWE Protected Header when JSON Serializations are used, as described in {{Section 7.2.1 of RFC7516}}.
 
@@ -227,7 +227,7 @@ In HPKE Direct Encryption mode:
 
 *  The "epk" Header Parameter MUST be present, it MUST contain an Encapsulated JSON Web Key and it MUST occur only within the JWE Protected Header.
 
-*  The "alg" Header Parameter MUST be "HPKE-DirEnc", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
+*  The "alg" Header Parameter MUST be "dir", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
 
 *  The JWE Ciphertext MUST be the resulting HPKE ciphertext ('ct' value) encoded using base64url.
 
@@ -251,7 +251,7 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-  "alg": "HPKE-DirEnc",
+  "alg": "dir",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
   "epk": {
     "kty": "EK",
@@ -272,7 +272,7 @@ In the above example, the JWE Protected Header value is:
 
 ~~~
 {
-  "alg": "HPKE-DirEnc",
+  "alg": "dir",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
   "epk": {
     "kty": "EK",
@@ -469,7 +469,7 @@ The following entry is added to the "JSON Web Key Types" registry:
 - "kty" Parameter Value: "EK"
 - Key Type Description: HPKE Encapsulated Key Type (See issue #18)
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 
 ## JSON Web Key Parameters
@@ -486,19 +486,11 @@ The following entry is added to the "JSON Web Key Parameters" registry:
 
 The following entries are added to the "JSON Web Signature and Encryption Algorithms" registry:
 
-- Algorithm Name: HPKE-DirEnc
-- Algorithm Description: HPKE Direct Encryption mode
-- Algorithm Usage Location(s): "alg"
-- JOSE Implementation Requirements: Optional
-- Change Controller: IESG
-- Specification Document(s): [[TBD: This RFC]]
-- Algorithm Analysis Documents(s): TODO
-
 - Algorithm Name: HPKE-Base-P256-SHA256-AES128GCM
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-256, HKDF-SHA256) KEM, the HKDF-SHA256 KDF and the AES-128-GCM AEAD.
 - Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
@@ -506,7 +498,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-384, HKDF-SHA384) KEM, the HKDF-SHA384 KDF, and the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
@@ -514,7 +506,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(P-521, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
@@ -522,7 +514,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the AES-128-GCM AEAD.
 - Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
@@ -530,7 +522,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X25519, HKDF-SHA256) KEM, the HKDF-SHA256 KDF, and the ChaCha20Poly1305 AEAD.
 - Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
@@ -538,7 +530,7 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the AES-256-GCM AEAD.
 - Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
@@ -546,24 +538,26 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 - Algorithm Description: Cipher suite for JOSE-HPKE in Base Mode that uses the DHKEM(X448, HKDF-SHA512) KEM, the HKDF-SHA512 KDF, and the ChaCha20Poly1305 AEAD.
 - Algorithm Usage Location(s): "alg, enc"
 - JOSE Implementation Requirements: Optional
-- Change Controller: IESG
+- Change Controller: IETF
 - Specification Document(s): [[TBD: This RFC]]
 - Algorithm Analysis Documents(s): TODO
 
 ## JSON Web Signature and Encryption Header Parameters
 
-The following entries are added to the "JSON Web Signature and Encryption Header Parameters" registry:
+The following entries are added to the "JSON Web Key Parameters" registry:
 
 - Parameter Name: "psk_id"
 - Parameter Description: A key identifier (kid) for the pre-shared key as defined in { Section 5.1.1 of RFC9180 }
 - Parameter Information Class: Public
-- Change Controller: IESG
+- Used with "kty" Value(s): *
+- Change Controller: IETF
 - Specification Document(s): [[This specification]]
 
 - Parameter Name: "auth_kid"
 - Parameter Description: A key identifier (kid) for the asymmetric key as defined in { Section 5.1.4 of RFC9180 }
 - Parameter Information Class: Public
-- Change Controller: IESG
+- Used with "kty" Value(s): *
+- Change Controller: IETF
 - Specification Document(s): [[This specification]]
  
 --- back

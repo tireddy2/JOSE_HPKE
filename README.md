@@ -2,6 +2,7 @@
 
 This is the working area for the IETF [jose](https://datatracker.ietf.org/wg/jose/documents/) Internet-Draft.
 
+* [Datatracker Page](https://datatracker.ietf.org/doc/draft-rha-jose-hpke-encrypt)
 
 ## Contributing
 

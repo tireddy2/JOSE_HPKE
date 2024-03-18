@@ -38,8 +38,6 @@ author:
 
  -
     fullname: Hannes Tschofenig
-    organization: 
-    city: 
     country: Austria
     email: "hannes.tschofenig@gmx.net"
 
@@ -56,11 +54,13 @@ author:
     organization: Transmute
     email: orie@transmute.industries
     country: United States
+
  -
     ins: M. Jones
     name: Michael B. Jones
-    organization: independent
+    organization: Self-Issued Consulting
     email: michael_b_jones@hotmail.com
+    uri: https://self-issued.info/
     country: United States
 
 normative:

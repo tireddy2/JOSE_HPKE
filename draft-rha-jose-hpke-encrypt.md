@@ -1,5 +1,5 @@
 ---
-title: "Use of Hybrid Public-Key Encryption (HPKE) with Javascript Object Signing and Encryption (JOSE)"
+title: "Use of Hybrid Public Key Encryption (HPKE) with JSON Object Signing and Encryption (JOSE)"
 abbrev: "Use of HPKE in JOSE"
 category: std
 
@@ -92,9 +92,9 @@ informative:
 --- abstract
 
 
-This specification defines Hybrid public-key encryption (HPKE) for use with 
-Javascript Object Signing and Encryption (JOSE). HPKE offers a variant of
-public-key encryption of arbitrary-sized plaintexts for a recipient public key.
+This specification defines Hybrid Public Key Encryption (HPKE) for use with
+JSON Object Signing and Encryption (JOSE). HPKE offers a variant of
+public key encryption of arbitrary-sized plaintexts for a recipient public key.
 
 HPKE works for any combination of an asymmetric key encapsulation mechanism (KEM),
 key derivation function (KDF), and authenticated encryption with additional data 
@@ -107,7 +107,7 @@ This document defines the use of the HPKE with JOSE.
 
 # Introduction
 
-Hybrid public-key encryption (HPKE) {{RFC9180}} is a scheme that 
+Hybrid Public Key Encryption (HPKE) {{RFC9180}} is a scheme that
 provides public key encryption of arbitrary-sized plaintexts given a 
 recipient's public key. 
 
@@ -568,3 +568,41 @@ The following entries are added to the "JSON Web Key Parameters" registry:
 This specification leverages text from {{?I-D.ietf-cose-hpke}}. We would like to thank Matt Chanda, Ilari Liusvaara, Aaron Parecki and Filip Skokan for their feedback.
 
 
+# Document History
+
+-07
+
+* Corrected some working group and document titles.
+* Added Document History section.
+
+-06
+
+* Use existing `"alg": "dir"` value for HPKE Direct Encryption mode.
+
+-05
+
+* Defined both Integrated Encryption mode and Key Encryption mode.
+* Aligned choices more closely with those of draft-ietf-cose-hpke.
+
+-04
+
+* Revamped Introduction and Overview sections.
+* Removed use of the `zip` parameter.
+* Populated IANA registries.
+
+-03
+
+* Described key encryption.
+
+-02
+
+* Removed Post-Quantum Considerations.
+
+-01
+
+* Described direct key agreement mode and key agreement with key wrapping mode.
+* Improved example.
+
+-00
+
+* Initial version.

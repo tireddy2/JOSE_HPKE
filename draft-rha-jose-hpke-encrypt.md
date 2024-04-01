@@ -569,6 +569,7 @@ This specification leverages text from {{?I-D.ietf-cose-hpke}}. We would like to
 
 
 # Document History
+{: numbered="false"}
 
 -07
 

@@ -157,9 +157,7 @@ This specification describes two modes of use for HPKE in JWE:
   
   *  HPKE Key Encryption mode, where HPKE is used to encrypt a content encryption key (CEK) and the CEK is subsequently used to encrypt the plaintext. This mode supports multiple recipients. This setup is conceptually similar to Key Agreement with Key Wrapping.
 
-When the alg value or enc value is set to any of algorithms registered by this specification then the 'epk' header parameter MUST be present, and it MUST be a JSON Web Key as defined in {{EK}} of this document.
-
-The "ek" member of an 'epk' will contain the base64url encoded "enc" value produced by the encapsulate operation of the HPKE KEM.
+The "ek" member of Protected Header or Unprotected Header will contain the base64url encoded encapsulated key (sometimes called KEM ciphertext) value produced by the encapsulate operation of the HPKE KEM.
 
 In all serializations, "ct" will be base64url encoded.
 
@@ -198,24 +196,6 @@ The recipient will create the receiving HPKE context by invoking SetupBaseR() (S
 
 The Open function will, if successful, decrypts "ct".  When decrypted, the result will be either the CEK (when Key Encryption mode is used), or the content (if Direct Encryption mode is used).  The CEK is the symmetric key used to decrypt the ciphertext.
 
-## Encapsulated JSON Web Keys {#EK}
-
-An encapsulated key is represented as JSON Web Key as described in { Section 4 of RFC7515 }.
-
-The "kty" parameter MUST be "EK".
-
-The "ek" parameter MUST be present, and MUST be the base64url encoded output of the encap operation defined for the HPKE KEM.
-
-As described in { Section 4 of RFC7515 }, additional members can be present in the JWK; if not understood by implementations encountering them, they MUST be ignored.
-
-This example demonstrates the representaton of an encapsulated key as a JWK.
-
-~~~
-{
-   "kty": "EK",
-   "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
-}
-~~~
 
 ### HPKE Direct Encryption
 
@@ -225,7 +205,7 @@ HPKE is employed to directly encrypt the plaintext, and the resulting ciphertext
 
 In HPKE Direct Encryption mode:
 
-*  The "epk" Header Parameter MUST be present, it MUST contain an Encapsulated JSON Web Key and it MUST occur only within the JWE Protected Header.
+*  The "ek" Header Parameter MUST be present, it MUST be an encapsulated key (also called a KEM ciphertext) and it MUST occur only within the JWE Protected Header.
 
 *  The "alg" Header Parameter MUST be "dir", "enc" MUST be an HPKE algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}} and they MUST occur only within the JWE Protected Header.
 
@@ -253,10 +233,7 @@ In the above example, the JWE Protected Header value is:
 {
   "alg": "dir",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
-  "epk": {
-    "kty": "EK",
-    "ek": "BGNkjzt076bsRGj78aX5AzT_HEOJBbY9q2Zo_5e7tbK0aPqu4eT1WI16jvRlZqpMyqZfP-RwR4Jwtaz_8U9thXA"
-  }
+  "ek": "BGNkjzt076bsRGj78aX5AzT_HEOJBbY9q2Zo_5e7tbK0aPqu4eT1WI16jvRlZqpMyqZfP-RwR4Jwtaz_8U9thXA"
 }
 ~~~
 
@@ -274,10 +251,7 @@ In the above example, the JWE Protected Header value is:
 {
   "alg": "dir",
   "enc": "HPKE-Base-P256-SHA256-AES128GCM",
-  "epk": {
-    "kty": "EK",
-    "ek": "BGNkjzt076bsRGj78aX5AzT_HEOJBbY9q2Zo_5e7tbK0aPqu4eT1WI16jvRlZqpMyqZfP-RwR4Jwtaz_8U9thXA"
-  }
+  "ek": "BGNkjzt076bsRGj78aX5AzT_HEOJBbY9q2Zo_5e7tbK0aPqu4eT1WI16jvRlZqpMyqZfP-RwR4Jwtaz_8U9thXA"
 }
 ~~~
 
@@ -287,7 +261,7 @@ This mode supports more than one recipient.
 
 HPKE is used to encrypt the	Content Encryption Key (CEK), and the resulting ciphertext is included in the JWE Encrypted Key. The plaintext will be encrypted using the CEK as explained in Step 15 of Section 5.1 of {{RFC7516}}.
 
-When there are multiple recipients, the sender MUST place the 'epk' parameter in the per-recipient unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}, and it MUST be present in the JWE Protected Header. The integrity-protected 'enc' parameter provides protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter. This attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}.
+When there are multiple recipients, the sender MUST place the 'ek' parameter in the per-recipient unprotected header to indicate the use of HPKE. In this case, the 'enc' (Encryption Algorithm) Header Parameter MUST be a content encryption algorithm from JSON Web Signature and Encryption Algorithms in {{JOSE-IANA}}, and it MUST be present in the JWE Protected Header. The integrity-protected 'enc' parameter provides protection against an attacker who manipulates the encryption algorithm in the 'enc' parameter. This attack is discussed in {{?I-D.draft-ietf-lamps-cms-cek-hkdf-sha256}}.
 
 In HPKE Key Encryption mode: 
 
@@ -308,10 +282,7 @@ The following example demonstrates the use of Key Encryption with General JSON S
       "header": {
         "kid": "urn:ietf:params:oauth:jwk-thumbprint:sha-256:adjwW6fyyZ94ZBjGjx_OpDEKHLGfd1ELkug_YmRAjCk",
         "alg": "HPKE-Base-P256-SHA256-AES128GCM",
-        "epk": {
-          "kty": "EK",
-          "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
-        }
+        "ek": "BHpP-u5JKziyUpqxNQqb0apHx1ecH2UzcRlhHR4ngJVS__gNu21DqqgPweuPpjglnXDnOuQ4kt9tHCs3PUzPxQs"
       }
     },
     {
@@ -358,10 +329,7 @@ In the above example, the JWE Protected Header value is:
 
   "alg": "HPKE-Base-P256-SHA256-AES128GCM",
   "enc": "A128GCM",  
-  "epk": {
-    "kty": "EK",
-    "ek": "BPRTKn8mQL4hN1ayokR8gkpTy5HQld4N0HXXB9cXtjUIQ37zsJDL7TugVkmD1aFYTx-0bM0tfxzejLctSDKjMQs"
-  }
+  "ek": "BPRTKn8mQL4hN1ayokR8gkpTy5HQld4N0HXXB9cXtjUIQ37zsJDL7TugVkmD1aFYTx-0bM0tfxzejLctSDKjMQs"
 }
 ~~~
 
@@ -376,10 +344,7 @@ In the above example, the JWE Protected Header value is:
 {
   "alg": "HPKE-Base-P256-SHA256-AES128GCM",
   "enc": "A128GCM",
-  "epk": {
-    "kty": "EK",
-    "ek": "BJ7rdNbkvwunssdju5WDkAazLaBX3IdcLRjy1RDSA9sij00jdybaHuQPTt6P31Bi0nE2kYW_7L_taAqAFK75Dek"
-  }
+  "ek": "BJ7rdNbkvwunssdju5WDkAazLaBX3IdcLRjy1RDSA9sij00jdybaHuQPTt6P31Bi0nE2kYW_7L_taAqAFK75Dek"
 }
 ~~~
 
@@ -461,26 +426,6 @@ When using Key Encryption, the strength of the content encryption algorithm shou
 #  IANA Considerations {#IANA}
 
 This document adds entries to {{JOSE-IANA}}.
-
-## JSON Web Key Types
-
-The following entry is added to the "JSON Web Key Types" registry:
-
-- "kty" Parameter Value: "EK"
-- Key Type Description: HPKE Encapsulated Key Type (See issue #18)
-- JOSE Implementation Requirements: Optional
-- Change Controller: IETF
-- Specification Document(s): [[TBD: This RFC]]
-
-## JSON Web Key Parameters
-
-The following entry is added to the "JSON Web Key Parameters" registry:
-
-- Parameter Name: "ek"
-- Parameter Description: Encapsulated Key
-- Parameter Information Class: Public
-- Used with "kty" Value(s): "EK"
-- Specification Document(s): [[TBD: This RFC]]
    
 ## JSON Web Signature and Encryption Algorithms
 
@@ -546,17 +491,27 @@ The following entries are added to the "JSON Web Signature and Encryption Algori
 
 The following entries are added to the "JSON Web Key Parameters" registry:
 
-- Parameter Name: "psk_id"
-- Parameter Description: A key identifier (kid) for the pre-shared key as defined in { Section 5.1.1 of RFC9180 }
-- Parameter Information Class: Public
-- Used with "kty" Value(s): *
+### ek
+
+- Header Parameter Name: "ek"
+- Header Parameter Description: An encapsulated key or kem ciphertext as defined in { Section 5.1.1 of RFC9180 }
+- Header Parameter Usage Location(s): JWE
 - Change Controller: IETF
 - Specification Document(s): [[This specification]]
 
-- Parameter Name: "auth_kid"
-- Parameter Description: A key identifier (kid) for the asymmetric key as defined in { Section 5.1.4 of RFC9180 }
-- Parameter Information Class: Public
-- Used with "kty" Value(s): *
+### psk_id
+
+- Header Parameter Name: "psk_id"
+- Header Parameter Description: A key identifier (kid) for the pre-shared key as defined in { Section 5.1.1 of RFC9180 }
+- Header Parameter Usage Location(s): JWE
+- Change Controller: IETF
+- Specification Document(s): [[This specification]]
+
+### auth_kid
+
+- Header Parameter Name: "auth_kid"
+- Header Parameter Description: A key identifier (kid) for the asymmetric key as defined in { Section 5.1.4 of RFC9180 }
+- Header Parameter Usage Location(s): JWE
 - Change Controller: IETF
 - Specification Document(s): [[This specification]]
  
